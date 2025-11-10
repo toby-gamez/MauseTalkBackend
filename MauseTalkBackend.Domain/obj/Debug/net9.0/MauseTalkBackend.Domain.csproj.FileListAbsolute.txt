@@ -1,0 +1,11 @@
+/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Domain/bin/Debug/net9.0/MauseTalkBackend.Domain.deps.json
+/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Domain/bin/Debug/net9.0/MauseTalkBackend.Domain.dll
+/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Domain/bin/Debug/net9.0/MauseTalkBackend.Domain.pdb
+/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Domain/obj/Debug/net9.0/MauseTalkBackend.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Domain/obj/Debug/net9.0/MauseTalkBackend.Domain.AssemblyInfoInputs.cache
+/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Domain/obj/Debug/net9.0/MauseTalkBackend.Domain.AssemblyInfo.cs
+/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Domain/obj/Debug/net9.0/MauseTalkBackend.Domain.csproj.CoreCompileInputs.cache
+/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Domain/obj/Debug/net9.0/MauseTalkBackend.Domain.dll
+/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Domain/obj/Debug/net9.0/refint/MauseTalkBackend.Domain.dll
+/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Domain/obj/Debug/net9.0/MauseTalkBackend.Domain.pdb
+/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Domain/obj/Debug/net9.0/ref/MauseTalkBackend.Domain.dll

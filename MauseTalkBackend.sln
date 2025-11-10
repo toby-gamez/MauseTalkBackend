@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MauseTalkBackend.Domain", "MauseTalkBackend.Domain\MauseTalkBackend.Domain.csproj", "{F1F32FA2-E8C3-481A-8831-8C262004A918}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MauseTalkBackend.Shared", "MauseTalkBackend.Shared\MauseTalkBackend.Shared.csproj", "{EE0597E4-85D7-4B21-8D76-4B1593AD0F69}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MauseTalkBackend.Api", "MauseTalkBackend.Api\MauseTalkBackend.Api.csproj", "{0620B667-BFE0-41B4-B854-D25058919341}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MauseTalkBackend.App", "MauseTalkBackend.App\MauseTalkBackend.App.csproj", "{8469CC2D-A149-4E03-A28C-8EC7F9489AB9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F1F32FA2-E8C3-481A-8831-8C262004A918}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1F32FA2-E8C3-481A-8831-8C262004A918}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1F32FA2-E8C3-481A-8831-8C262004A918}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1F32FA2-E8C3-481A-8831-8C262004A918}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE0597E4-85D7-4B21-8D76-4B1593AD0F69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE0597E4-85D7-4B21-8D76-4B1593AD0F69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE0597E4-85D7-4B21-8D76-4B1593AD0F69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE0597E4-85D7-4B21-8D76-4B1593AD0F69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0620B667-BFE0-41B4-B854-D25058919341}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0620B667-BFE0-41B4-B854-D25058919341}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0620B667-BFE0-41B4-B854-D25058919341}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0620B667-BFE0-41B4-B854-D25058919341}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8469CC2D-A149-4E03-A28C-8EC7F9489AB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8469CC2D-A149-4E03-A28C-8EC7F9489AB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8469CC2D-A149-4E03-A28C-8EC7F9489AB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8469CC2D-A149-4E03-A28C-8EC7F9489AB9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

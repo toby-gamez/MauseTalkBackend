@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "JO9HRMIMjco=",
+  "success": true,
+  "projectFilePath": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Domain/MauseTalkBackend.Domain.csproj",
+  "expectedPackageFiles": [
+    "/home/tobias/.nuget/packages/microsoft.aspnetcore.app.ref/9.0.9/microsoft.aspnetcore.app.ref.9.0.9.nupkg.sha512"
+  ],
+  "logs": []
+}
