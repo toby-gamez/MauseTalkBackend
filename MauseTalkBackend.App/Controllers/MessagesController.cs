@@ -77,7 +77,7 @@ public class MessagesController : ControllerBase
 
             // Send real-time notification
             await _hubContext.Clients.Group($"Chat_{createMessageDto.ChatId}")
-                .SendAsync("NewMessage", messageDto);
+                .SendAsync("ReceiveMessage", messageDto);
 
             return Ok(ApiResponse<MessageDto>.SuccessResult(messageDto, "Message sent successfully"));
         }
@@ -215,8 +215,8 @@ public class MessagesController : ControllerBase
             FileName = message.FileName,
             FileSize = message.FileSize,
             MimeType = message.MimeType,
-            CreatedAt = message.CreatedAt,
-            EditedAt = message.EditedAt,
+            CreatedAt = DateTime.SpecifyKind(message.CreatedAt, DateTimeKind.Utc),
+            EditedAt = message.EditedAt.HasValue ? DateTime.SpecifyKind(message.EditedAt.Value, DateTimeKind.Utc) : null,
             Reactions = message.Reactions?.Select(MapToReactionDto) ?? Enumerable.Empty<ReactionDto>()
         };
     }
@@ -227,9 +227,10 @@ public class MessagesController : ControllerBase
         {
             Id = reaction.Id,
             MessageId = reaction.MessageId,
+            UserId = reaction.UserId.ToString(),
             User = MapToUserDto(reaction.User),
             Type = reaction.Type,
-            CreatedAt = reaction.CreatedAt
+            CreatedAt = DateTime.SpecifyKind(reaction.CreatedAt, DateTimeKind.Utc)
         };
     }
 
@@ -242,8 +243,8 @@ public class MessagesController : ControllerBase
             Email = user.Email,
             DisplayName = user.DisplayName,
             AvatarUrl = user.AvatarUrl,
-            CreatedAt = user.CreatedAt,
-            LastSeenAt = user.LastSeenAt,
+            CreatedAt = DateTime.SpecifyKind(user.CreatedAt, DateTimeKind.Utc),
+            LastSeenAt = DateTime.SpecifyKind(user.LastSeenAt, DateTimeKind.Utc),
             IsOnline = user.IsOnline
         };
     }

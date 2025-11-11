@@ -1,0 +1,1476 @@
+@using MauseTalkBackend.Domain.DTOs
+@using MauseTalkBackend.Domain.Entities
+@using MauseTalkBackend.Client.Services
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Forms
+@using ChatDto = MauseTalkBackend.Domain.DTOs.ChatDto
+@using MessageDto = MauseTalkBackend.Domain.DTOs.MessageDto
+@using UserDto = MauseTalkBackend.Domain.DTOs.UserDto
+@using ReactionDto = MauseTalkBackend.Domain.DTOs.ReactionDto
+@using CreateChatDto = MauseTalkBackend.Domain.DTOs.CreateChatDto
+@inject AuthService AuthService
+@inject ChatService ChatService
+@inject MessageService MessageService
+@inject SignalRService SignalRService
+@inject FileService FileService
+@inject IInviteService InviteService
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<div class="chat-layout">
+    <!-- Sidebar s chaty -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="user-info">
+                <div class="user-avatar">
+                    @if (!string.IsNullOrEmpty(AuthService.CurrentUser?.AvatarUrl))
+                    {
+                        <img src="@AuthService.CurrentUser.AvatarUrl" alt="Avatar" />
+                    }
+                    else
+                    {
+                        <span>@GetInitials(AuthService.CurrentUser?.DisplayName ?? AuthService.CurrentUser?.Username ?? "?")</span>
+                    }
+                </div>
+                <div class="user-details">
+                    <div class="username">@(AuthService.CurrentUser?.DisplayName ?? AuthService.CurrentUser?.Username)</div>
+                    <div class="status @(isOnline ? "online" : "offline")">
+                        <span class="status-dot"></span>
+                        @(isOnline ? "Online" : "Offline")
+                    </div>
+                </div>
+                <button class="logout-btn" @onclick="HandleLogout" title="Odhlásit se">
+                    🚪
+                </button>
+            </div>
+            
+            <div class="chat-actions">
+                <button class="new-chat-btn" @onclick="ShowNewChatModal">
+                    ➕ Nový chat
+                </button>
+            </div>
+        </div>
+
+        <div class="chat-list">
+            @if (chats.Any())
+            {
+                @foreach (var chat in chats.OrderByDescending(c => c.LastActivityAt))
+                {
+                    <div class="chat-item @(selectedChat?.Id == chat.Id ? "active" : "")" @onclick="() => SelectChat(chat)">
+                        <div class="chat-avatar">
+                            @if (chat.Type == ChatType.Direct)
+                            {
+                                var otherUser = chat.Users.FirstOrDefault(m => m.UserId != AuthService.CurrentUser?.Id)?.User;
+                                if (!string.IsNullOrEmpty(otherUser?.AvatarUrl))
+                                {
+                                    <img src="@otherUser.AvatarUrl" alt="Avatar" />
+                                }
+                                else
+                                {
+                                    <span>@GetInitials(otherUser?.DisplayName ?? otherUser?.Username ?? "?")</span>
+                                }
+                            }
+                            else
+                            {
+                                <span>@GetInitials(chat.Name)</span>
+                            }
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-name">
+                                @if (chat.Type == ChatType.Direct)
+                                {
+                                    var otherUser = chat.Users.FirstOrDefault(m => m.UserId != AuthService.CurrentUser?.Id)?.User;
+                                    @(otherUser?.DisplayName ?? otherUser?.Username ?? "Neznámý uživatel")
+                                }
+                                else
+                                {
+                                    @chat.Name
+                                }
+                            </div>
+                            @if (chat.LastMessage != null)
+                            {
+                                <div class="last-message">
+                                    @if (chat.LastMessage.Type == MessageType.Text)
+                                    {
+                                        @chat.LastMessage.Content
+                                    }
+                                    else if (chat.LastMessage.Type == MessageType.Image)
+                                    {
+                                        <span>📷 Obrázek</span>
+                                    }
+                                    else if (chat.LastMessage.Type == MessageType.Audio)
+                                    {
+                                        <span>🎵 Zvukový soubor</span>
+                                    }
+                                    else
+                                    {
+                                        <span>📎 Soubor</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <div class="chat-meta">
+                            <div class="chat-time" title="@GetFullTime(chat.LastActivityAt)">@FormatTime(chat.LastActivityAt)</div>
+                            @if (chat.UnreadCount > 0)
+                            {
+                                <div class="unread-badge">@chat.UnreadCount</div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+                    <p>💬 Žádné chaty</p>
+                    <p>Začněte nový chat!</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Main chat area -->
+    <div class="chat-main">
+        @if (selectedChat != null)
+        {
+            <div class="chat-header">
+                <div class="chat-title">
+                    @if (selectedChat.Type == ChatType.Direct)
+                    {
+                        var otherUser = selectedChat.Users.FirstOrDefault(m => m.UserId != AuthService.CurrentUser?.Id)?.User;
+                        @(otherUser?.DisplayName ?? otherUser?.Username ?? "Neznámý uživatel")
+                    }
+                    else
+                    {
+                        @selectedChat.Name
+                    }
+                </div>
+                <div class="chat-info-text">
+                    @if (selectedChat.Type == ChatType.Group)
+                    {
+                        <span>@selectedChat.Users.Count členů</span>
+                    }
+                    else
+                    {
+                        var otherUser = selectedChat.Users.FirstOrDefault(m => m.UserId != AuthService.CurrentUser?.Id)?.User;
+                        <span>@(otherUser?.IsOnline == true ? "Online" : "Offline")</span>
+                    }
+                </div>
+            </div>
+
+            <div class="messages-container" @ref="messagesContainer">
+                @foreach (var message in messages)
+                {
+                    <div class="message @(message.IsFromCurrentUser ? "own" : "other")">
+                        @if (!message.IsFromCurrentUser)
+                        {
+                            <div class="message-avatar">
+                                @if (!string.IsNullOrEmpty(message.User?.AvatarUrl))
+                                {
+                                    <img src="@message.User.AvatarUrl" alt="Avatar" />
+                                }
+                                else
+                                {
+                                    <span>@GetInitials(message.User?.DisplayName ?? message.User?.Username ?? "?")</span>
+                                }
+                            </div>
+                        }
+                        
+                        <div class="message-content">
+                            @if (!message.IsFromCurrentUser)
+                            {
+                                <div class="message-author">@(message.User?.DisplayName ?? message.User?.Username)</div>
+                            }
+                            
+                            <div class="message-bubble">
+                                @if (message.Type == MessageType.Text)
+                                {
+                                    <div class="message-text">@message.Content</div>
+                                }
+                                else if (message.Type == MessageType.Image)
+                                {
+                                    <div class="message-image">
+                                        @if (!string.IsNullOrEmpty(message.Content))
+                                        {
+                                            <div class="message-text">@message.Content</div>
+                                        }
+                                        <img src="@GetFullFileUrl(message.FileUrl)" alt="@message.FileName" @onclick="() => ShowImageModal(GetFullFileUrl(message.FileUrl))" />
+                                    </div>
+                                }
+                                else if (message.Type == MessageType.Audio)
+                                {
+                                    <div class="message-audio">
+                                        @if (!string.IsNullOrEmpty(message.Content))
+                                        {
+                                            <div class="message-text">@message.Content</div>
+                                        }
+                                        <audio controls>
+                                            <source src="@GetFullFileUrl(message.FileUrl)" type="@message.MimeType">
+                                        </audio>
+                                        <div class="file-info">🎵 @message.FileName</div>
+                                    </div>
+                                }
+                                else if (message.Type == MessageType.File)
+                                {
+                                    <div class="message-file">
+                                        @if (!string.IsNullOrEmpty(message.Content))
+                                        {
+                                            <div class="message-text">@message.Content</div>
+                                        }
+                                        <a href="@GetFullFileUrl(message.FileUrl)" download="@message.FileName" class="file-download">
+                                            <span class="file-icon">📎</span>
+                                            <div class="file-details">
+                                                <div class="file-name">@message.FileName</div>
+                                                <div class="file-size">@FormatFileSize(message.FileSize ?? 0)</div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                }
+
+                                <div class="message-time" title="@GetFullTime(message.CreatedAt)">@FormatTime(message.CreatedAt)</div>
+                            </div>
+
+                            @if (message.Reactions.Any())
+                            {
+                                <div class="message-reactions">
+                                    @foreach (var reactionGroup in message.Reactions.GroupBy(r => r.Type))
+                                    {
+                                        <button class="reaction-btn @(reactionGroup.Any(r => r.UserId == AuthService.CurrentUser?.Id) ? "active" : "")" 
+                                                @onclick="() => ToggleReaction(message.Id, reactionGroup.Key)">
+                                            <span class="reaction-emoji">@GetReactionEmoji(reactionGroup.Key)</span>
+                                            <span class="reaction-count">@reactionGroup.Count()</span>
+                                        </button>
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        <div class="message-actions">
+                            <div class="reaction-picker">
+                                @foreach (ReactionType reaction in Enum.GetValues<ReactionType>())
+                                {
+                                    <button class="reaction-option" @onclick="() => ToggleReaction(message.Id, reaction)">
+                                        @GetReactionEmoji(reaction)
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+                
+                @if (isLoading)
+                {
+                    <div class="loading-messages">
+                        <div class="spinner"></div>
+                        <span>Načítání zpráv...</span>
+                    </div>
+                }
+            </div>
+
+            <div class="message-input">
+                @if (hasUploadedFile)
+                {
+                    <div class="file-preview">
+                        @if (uploadedFileType == MessageType.Image)
+                        {
+                            <div class="preview-image">
+                                <img src="@GetFullFileUrl(uploadedFileUrl)" alt="@uploadedFileName" />
+                            </div>
+                        }
+                        else if (uploadedFileType == MessageType.Audio)
+                        {
+                            <div class="preview-audio">
+                                <span class="file-icon">🎵</span>
+                                <span class="file-name">@uploadedFileName</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="preview-file">
+                                <span class="file-icon">📎</span>
+                                <span class="file-name">@uploadedFileName</span>
+                            </div>
+                        }
+                        <button class="remove-file-btn" @onclick="RemoveUploadedFile" title="Odebrat soubor">×</button>
+                    </div>
+                }
+                <div class="input-row">
+                    <button class="file-btn" @onclick="HandleFileSelect" title="Přiložit soubor">
+                        📎
+                    </button>
+                    <input @ref="messageInput" 
+                           value="@newMessage"
+                           @oninput="OnInputChanged"
+                           @onkeydown="HandleKeyPress" 
+                           placeholder="Napište zprávu..." 
+                           class="text-input" 
+                           disabled="@isLoading" />
+                    <button class="send-btn" @onclick="SendMessage" disabled="@(isLoading || ((newMessage?.Length ?? 0) < 1 && !hasUploadedFile))">
+                        🚀
+                    </button>
+                </div>
+                
+                <InputFile @ref="fileInput" style="display: none;" OnChange="HandleFileSelected" 
+                           accept="image/*,audio/*,.pdf,.txt,.doc,.docx,.xlsx,.pptx" multiple="false" />
+            </div>
+        }
+        else
+        {
+            <div class="no-chat-selected">
+                <div class="welcome-message">
+                    <h2>👋 Vítejte v MauseChat!</h2>
+                    <p>Vyberte chat ze seznamu nebo vytvořte nový.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Connection status -->
+<div class="connection-status @(isOnline ? "connected" : "disconnected")">
+    <span class="status-text">@connectionStatus</span>
+</div>
+
+<!-- New Chat Modal -->
+@if (showNewChatModal)
+{
+    <div class="modal-overlay" @onclick="CloseNewChatModal">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3>🆕 Vytvořit nový chat</h3>
+                <button class="close-btn" @onclick="CloseNewChatModal">×</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Název chatu:</label>
+                    <input @bind="newChatName" @onkeypress="HandleNewChatKeyPress" 
+                           placeholder="Zadejte název..." class="modal-input" />
+                </div>
+                
+                <div class="form-group">
+                    <label>Popis (volitelně):</label>
+                    <textarea @bind="newChatDescription" placeholder="Krátký popis chatu..." 
+                              class="modal-textarea"></textarea>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-secondary" @onclick="CloseNewChatModal">Zrušit</button>
+                <button class="btn-primary" @onclick="CreateNewChat" disabled="@(string.IsNullOrWhiteSpace(newChatName) || isCreatingChat)">
+                    @if (isCreatingChat)
+                    {
+                        <span>⏳ Vytváření...</span>
+                    }
+                    else
+                    {
+                        <span>✅ Vytvořit</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Image Modal -->
+@if (showImageModal && !string.IsNullOrEmpty(selectedImageUrl))
+{
+    <div class="image-modal-overlay" @onclick="CloseImageModal">
+        <div class="image-modal-content" @onclick:stopPropagation="true">
+            <button class="image-close-btn" @onclick="CloseImageModal">×</button>
+            <img src="@selectedImageUrl" alt="Full size image" class="modal-image" />
+        </div>
+    </div>
+}
+
+<style>
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        width: 90%;
+        max-width: 500px;
+        overflow: hidden;
+        animation: modalSlideIn 0.3s ease-out;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 1.25rem;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+    }
+
+    .close-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .modal-input, .modal-textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+        box-sizing: border-box;
+    }
+
+    .modal-input:focus, .modal-textarea:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .modal-textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        padding: 1.5rem;
+        background: #f8f9fa;
+    }
+
+    .btn-primary, .btn-secondary {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-secondary {
+        background: #e9ecef;
+        color: #495057;
+    }
+
+    .btn-secondary:hover {
+        background: #dee2e6;
+    }
+
+    @@keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* Reaction Styles */
+    .message-reactions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        margin-top: 0.5rem;
+    }
+
+    .reaction-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        min-height: 28px;
+    }
+
+    .reaction-btn:hover {
+        background: #e9ecef;
+        transform: translateY(-1px);
+    }
+
+    .reaction-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .reaction-emoji {
+        font-size: 0.875rem;
+    }
+
+    .reaction-count {
+        font-size: 0.75rem;
+        font-weight: 500;
+        min-width: 12px;
+        text-align: center;
+    }
+
+    .message-actions {
+        position: relative;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .message:hover .message-actions {
+        opacity: 1;
+    }
+
+    .reaction-picker {
+        display: none;
+        position: absolute;
+        bottom: 100%;
+        left: 0;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 100;
+    }
+
+    .message-actions:hover .reaction-picker {
+        display: flex;
+        gap: 0.25rem;
+    }
+
+    .reaction-option {
+        background: none;
+        border: none;
+        font-size: 1.25rem;
+        padding: 0.25rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .reaction-option:hover {
+        background: #f8f9fa;
+    }
+
+    /* Image Modal Styles */
+    .image-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        cursor: pointer;
+    }
+
+    .image-modal-content {
+        position: relative;
+        max-width: 90vw;
+        max-height: 90vh;
+        cursor: default;
+    }
+
+    .modal-image {
+        max-width: 100%;
+        max-height: 90vh;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+
+    .image-close-btn {
+        position: absolute;
+        top: -40px;
+        right: 0;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        font-size: 2rem;
+        cursor: pointer;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+    }
+
+    .image-close-btn:hover {
+        background: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Message Image Styles */
+    .message-image {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .message-image img {
+        max-width: 300px;
+        max-height: 200px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .message-image img:hover {
+        transform: scale(1.02);
+    }
+
+    .message-image .message-text {
+        font-size: 0.875rem;
+        line-height: 1.4;
+        color: inherit;
+        margin: 0;
+    }
+
+    /* Message Audio Styles */
+    .message-audio {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .message-audio .message-text {
+        font-size: 0.875rem;
+        line-height: 1.4;
+        color: inherit;
+        margin: 0;
+    }
+
+    /* Message File Styles */
+    .message-file {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .message-file .message-text {
+        font-size: 0.875rem;
+        line-height: 1.4;
+        color: inherit;
+        margin: 0;
+    }
+
+    /* File Preview Styles */
+    .file-preview {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        position: relative;
+    }
+
+    .preview-image img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+
+    .preview-audio, .preview-file {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .preview-audio .file-icon, .preview-file .file-icon {
+        font-size: 1.5rem;
+    }
+
+    .preview-audio .file-name, .preview-file .file-name {
+        font-size: 0.875rem;
+        color: #495057;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .remove-file-btn {
+        position: absolute;
+        top: 0.25rem;
+        right: 0.25rem;
+        background: rgba(220, 53, 69, 0.8);
+        border: none;
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+    }
+
+    .remove-file-btn:hover {
+        background: rgba(220, 53, 69, 1);
+    }
+</style>
+
+@code {
+    private List<ChatDto> chats = new();
+    private List<MessageDto> messages = new();
+    private ChatDto? selectedChat = null;
+    private string newMessage = string.Empty;
+    private bool isLoading = false;
+    private bool isOnline = false;
+    private string connectionStatus = "Odpojeno";
+    
+    private ElementReference messagesContainer;
+    private ElementReference messageInput;
+    private InputFile? fileInput;
+    
+    // New Chat Modal
+    private bool showNewChatModal = false;
+    private string newChatName = string.Empty;
+    private string newChatDescription = string.Empty;
+    private bool isCreatingChat = false;
+
+    // Image Modal
+    private bool showImageModal = false;
+    private string? selectedImageUrl = null;
+
+    // File Upload Preview
+    private bool hasUploadedFile = false;
+    private string? uploadedFileUrl = null;
+    private string? uploadedFileName = null;
+    private MessageType uploadedFileType = MessageType.Text;
+    private long uploadedFileSize = 0;
+    private string? uploadedMimeType = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Subscribe to SignalR events
+        SignalRService.MessageReceived += OnMessageReceived;
+        SignalRService.ReactionAdded += OnReactionAdded;
+        SignalRService.ReactionRemoved += OnReactionRemoved;
+        SignalRService.ConnectionStateChanged += OnConnectionStateChanged;
+        
+        await LoadChats();
+        await StartSignalRConnection();
+    }
+
+    private async Task LoadChats()
+    {
+        isLoading = true;
+        try
+        {
+            chats = await ChatService.GetChatsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading chats: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task StartSignalRConnection()
+    {
+        try
+        {
+            await SignalRService.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"SignalR connection error: {ex.Message}");
+        }
+    }
+
+    private async Task SelectChat(ChatDto chat)
+    {
+        if (selectedChat?.Id == chat.Id) return;
+
+        // Leave previous chat
+        if (selectedChat != null)
+        {
+            await SignalRService.LeaveChatAsync(selectedChat.Id);
+        }
+
+        selectedChat = chat;
+        
+        // Reset uploaded file when changing chats
+        ResetUploadedFile();
+        
+        await LoadMessages(chat.Id);
+        Console.WriteLine($"Joining chat: {chat.Id} - {chat.Name}");
+        await SignalRService.JoinChatAsync(chat.Id);
+        
+        // Focus on input
+        await messageInput.FocusAsync();
+    }
+
+    private async Task LoadMessages(string chatId)
+    {
+        isLoading = true;
+        try
+        {
+            messages = await MessageService.GetMessagesAsync(chatId);
+            
+            // Mark messages as from current user and debug reactions
+            var currentUserId = AuthService.CurrentUser?.Id;
+            foreach (var message in messages)
+            {
+                message.IsFromCurrentUser = message.UserId == currentUserId;
+                Console.WriteLine($"Message {message.Id}: {message.Reactions.Count} reactions");
+                foreach (var reaction in message.Reactions)
+                {
+                    Console.WriteLine($"  - {reaction.Type} by {reaction.UserId} (User: {reaction.User?.Username})");
+                }
+            }
+            
+            StateHasChanged();
+            await ScrollToBottom();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading messages: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SendMessage()
+    {
+        if (selectedChat == null || isLoading)
+            return;
+            
+        // Can send if there's either text or uploaded file
+        if (string.IsNullOrWhiteSpace(newMessage) && !hasUploadedFile)
+            return;
+
+        var messageText = newMessage?.Trim() ?? string.Empty;
+
+        var request = new SendMessageRequest
+        {
+            ChatId = selectedChat.Id,
+            Content = messageText,
+            Type = hasUploadedFile ? uploadedFileType : MessageType.Text,
+            FileUrl = hasUploadedFile ? uploadedFileUrl : null,
+            FileName = hasUploadedFile ? uploadedFileName : null,
+            FileSize = hasUploadedFile ? uploadedFileSize : null,
+            MimeType = hasUploadedFile ? uploadedMimeType : null
+        };
+
+        try
+        {
+            isLoading = true;
+            StateHasChanged();
+            
+            // Debug: Log what we're sending
+            Console.WriteLine($"Sending message - Text: '{messageText}', Type: {request.Type}, HasFile: {hasUploadedFile}");
+            if (hasUploadedFile)
+            {
+                Console.WriteLine($"File details - Name: {uploadedFileName}, URL: {uploadedFileUrl}");
+            }
+            
+            // Send via REST API instead of SignalR
+            var response = await MessageService.SendMessageAsync(request);
+            
+            if (response.Success)
+            {
+                // Message sent successfully, it will be received via SignalR
+                Console.WriteLine("Message sent successfully");
+                
+                // Reset message text and uploaded file info only on success
+                newMessage = string.Empty;
+                ResetUploadedFile();
+            }
+            else
+            {
+                Console.WriteLine($"Failed to send message: {response.Message}");
+                // Keep the original text and file on error for retry
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error sending message: {ex.Message}");
+            // Keep the original text and file on error for retry
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ResetUploadedFile()
+    {
+        hasUploadedFile = false;
+        uploadedFileUrl = null;
+        uploadedFileName = null;
+        uploadedFileType = MessageType.Text;
+        uploadedFileSize = 0;
+        uploadedMimeType = null;
+    }
+
+    private async Task RemoveUploadedFile()
+    {
+        // Optionally delete the file from server
+        if (!string.IsNullOrEmpty(uploadedFileUrl))
+        {
+            try
+            {
+                await FileService.DeleteFileAsync(uploadedFileUrl);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting uploaded file: {ex.Message}");
+            }
+        }
+        
+        ResetUploadedFile();
+        StateHasChanged();
+    }
+
+    private void OnInputChanged(ChangeEventArgs e)
+    {
+        newMessage = e.Value?.ToString() ?? string.Empty;
+        Console.WriteLine($"Input changed: '{newMessage}', Length: {newMessage.Length}");
+        StateHasChanged(); // Force UI update
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        Console.WriteLine($"Key pressed: {e.Key}, Shift: {e.ShiftKey}, MessageLength: {newMessage?.Length ?? 0}, HasFile: {hasUploadedFile}, Message: '{newMessage}'");
+        
+        if (e.Key == "Enter" && !e.ShiftKey)
+        {
+            // Force a small delay to ensure binding is updated
+            await Task.Delay(10);
+            
+            Console.WriteLine($"After delay - MessageLength: {newMessage?.Length ?? 0}, Message: '{newMessage}'");
+            
+            // Only send if there's content or uploaded file
+            if ((newMessage?.Length ?? 0) >= 1 || hasUploadedFile)
+            {
+                Console.WriteLine("Sending message via Enter key");
+                await SendMessage();
+            }
+            else
+            {
+                Console.WriteLine("Not sending - no content");
+            }
+        }
+    }
+
+    private async Task ToggleReaction(string messageId, ReactionType reactionType)
+    {
+        try
+        {
+            var message = messages.FirstOrDefault(m => m.Id == messageId);
+            if (message == null) 
+            {
+                Console.WriteLine($"Message not found: {messageId}");
+                return;
+            }
+
+            var currentUserId = AuthService.CurrentUser?.Id;
+            if (string.IsNullOrEmpty(currentUserId))
+            {
+                Console.WriteLine("Current user ID is null");
+                return;
+            }
+
+            var existingReaction = message.Reactions.FirstOrDefault(r => 
+                r.UserId == currentUserId && r.Type == reactionType);
+
+            Console.WriteLine($"Toggling reaction {reactionType} for message {messageId}. User: {currentUserId}. Existing: {existingReaction != null}");
+
+            if (existingReaction != null)
+            {
+                // Optimistic UI update - remove immediately
+                message.Reactions.Remove(existingReaction);
+                StateHasChanged();
+                
+                // Send API request
+                await MessageService.RemoveReactionAsync(messageId, reactionType);
+                Console.WriteLine($"Reaction {reactionType} removed from message {messageId}");
+            }
+            else
+            {
+                // Create new reaction for optimistic UI update
+                var newReaction = new ReactionDto
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    MessageId = messageId,
+                    UserId = currentUserId,
+                    Type = reactionType,
+                    CreatedAt = DateTime.Now,
+                    User = AuthService.CurrentUser
+                };
+                
+                // Optimistic UI update - add immediately
+                message.Reactions.Add(newReaction);
+                StateHasChanged();
+                
+                // Send API request
+                await MessageService.AddReactionAsync(messageId, new AddReactionRequest { Type = reactionType });
+                Console.WriteLine($"Reaction {reactionType} added to message {messageId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error toggling reaction: {ex.Message}");
+            // Reload messages to get correct state on error
+            if (selectedChat != null)
+            {
+                await LoadMessages(selectedChat.Id);
+            }
+        }
+    }
+
+    private async Task HandleLogout()
+    {
+        await SignalRService.StopAsync();
+        await AuthService.LogoutAsync();
+    }
+
+    private void OnMessageReceived(MessageDto message)
+    {
+        if (selectedChat?.Id == message.ChatId)
+        {
+            message.IsFromCurrentUser = message.UserId == AuthService.CurrentUser?.Id;
+            messages.Add(message);
+            InvokeAsync(async () =>
+            {
+                StateHasChanged();
+                await ScrollToBottom();
+            });
+        }
+        
+        // Update chat in sidebar
+        var chat = chats.FirstOrDefault(c => c.Id == message.ChatId);
+        if (chat != null)
+        {
+            chat.LastMessage = message;
+            chat.LastActivityAt = message.CreatedAt;
+            if (selectedChat?.Id != message.ChatId)
+            {
+                chat.UnreadCount++;
+            }
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void OnReactionAdded(ReactionDto reaction)
+    {
+        Console.WriteLine($"OnReactionAdded called: {reaction.Type} by {reaction.UserId} on message {reaction.MessageId}");
+        
+        var message = messages.FirstOrDefault(m => m.Id == reaction.MessageId.ToString());
+        if (message != null)
+        {
+            // Check if reaction already exists
+            var existingReaction = message.Reactions.FirstOrDefault(r => 
+                r.UserId == reaction.UserId && r.Type == reaction.Type);
+            
+            Console.WriteLine($"Message found. Existing reaction: {existingReaction != null}. Total reactions before: {message.Reactions.Count}");
+            
+            if (existingReaction == null)
+            {
+                message.Reactions.Add(reaction);
+                Console.WriteLine($"Reaction added. Total reactions now: {message.Reactions.Count}");
+                InvokeAsync(StateHasChanged);
+            }
+        }
+        else
+        {
+            Console.WriteLine($"Message not found for reaction. Available messages: {string.Join(", ", messages.Select(m => m.Id))}");
+        }
+    }
+
+    private void OnReactionRemoved(string messageId, string userId, ReactionType reactionType)
+    {
+        var message = messages.FirstOrDefault(m => m.Id == messageId);
+        if (message != null)
+        {
+            var reactionToRemove = message.Reactions.FirstOrDefault(r => 
+                r.UserId == userId && r.Type == reactionType);
+            
+            if (reactionToRemove != null)
+            {
+                message.Reactions.Remove(reactionToRemove);
+                InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+
+    private void OnConnectionStateChanged(string status)
+    {
+        connectionStatus = status;
+        isOnline = status == "Připojeno";
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ScrollToBottom()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("scrollToBottom", messagesContainer);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Scroll error: {ex.Message}");
+        }
+    }
+
+    private void ShowNewChatModal()
+    {
+        showNewChatModal = true;
+        newChatName = string.Empty;
+        newChatDescription = string.Empty;
+        StateHasChanged();
+    }
+
+    private void CloseNewChatModal()
+    {
+        showNewChatModal = false;
+        newChatName = string.Empty;
+        newChatDescription = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task HandleNewChatKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(newChatName))
+        {
+            await CreateNewChat();
+        }
+        else if (e.Key == "Escape")
+        {
+            CloseNewChatModal();
+        }
+    }
+
+    private async Task CreateNewChat()
+    {
+        if (string.IsNullOrWhiteSpace(newChatName) || isCreatingChat)
+            return;
+
+        try
+        {
+            isCreatingChat = true;
+            StateHasChanged();
+
+            var createChatRequest = new CreateChatRequest
+            {
+                Name = newChatName.Trim(),
+                Description = string.IsNullOrWhiteSpace(newChatDescription) ? null : newChatDescription.Trim(),
+                Type = ChatType.Group
+            };
+
+            var response = await ChatService.CreateChatAsync(createChatRequest);
+            
+            if (response.Success && response.Data != null)
+            {
+                // Refresh chats
+                await LoadChats();
+                
+                // Select the new chat
+                var newChat = chats.FirstOrDefault(c => c.Id == response.Data.Id);
+                if (newChat != null)
+                {
+                    await SelectChat(newChat);
+                }
+                
+                CloseNewChatModal();
+            }
+            else
+            {
+                Console.WriteLine($"Error creating chat: {response.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception creating chat: {ex.Message}");
+        }
+        finally
+        {
+            isCreatingChat = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleFileSelect()
+    {
+        if (fileInput?.Element != null)
+        {
+            await JSRuntime.InvokeVoidAsync("triggerFileInput", fileInput.Element);
+        }
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        if (selectedChat == null || isLoading) return;
+
+        var files = e.GetMultipleFiles(1);
+        if (!files.Any()) return;
+
+        var file = files.First();
+        
+        try
+        {
+            isLoading = true;
+            StateHasChanged();
+
+            Console.WriteLine($"File selected: {file.Name}, Size: {file.Size}, Type: {file.ContentType}");
+
+            // Validate file size (10MB for images, 25MB for audio, 50MB for documents)
+            const long maxSize = 50 * 1024 * 1024; // 50MB
+            if (file.Size > maxSize)
+            {
+                Console.WriteLine($"File too large: {FileService.FormatFileSize(file.Size)}");
+                return;
+            }
+
+            // Determine message type from file extension
+            var messageType = FileService.GetMessageTypeFromFile(file.Name);
+            var mimeType = FileService.GetMimeType(file.Name);
+
+            // Validate file type
+            bool isValidFile = messageType switch
+            {
+                MessageType.Image => FileService.IsValidImageFile(file.Name, file.Size),
+                MessageType.Audio => FileService.IsValidAudioFile(file.Name, file.Size),
+                MessageType.File => FileService.IsValidDocumentFile(file.Name, file.Size),
+                _ => false
+            };
+
+            if (!isValidFile)
+            {
+                Console.WriteLine($"Invalid file type: {file.Name}");
+                return;
+            }
+
+            // Upload file
+            using var stream = file.OpenReadStream(maxSize);
+            var uploadResult = await FileService.UploadFileAsync(stream, file.Name, mimeType);
+
+            if (!uploadResult.Success || uploadResult.Data == null)
+            {
+                Console.WriteLine($"File upload failed: {uploadResult.Message}");
+                return;
+            }
+
+            Console.WriteLine($"File uploaded successfully: {uploadResult.Data.FileUrl}");
+
+            // Store uploaded file info for later sending
+            hasUploadedFile = true;
+            uploadedFileUrl = uploadResult.Data.FileUrl;
+            uploadedFileName = file.Name;
+            uploadedFileType = messageType;
+            uploadedFileSize = file.Size;
+            uploadedMimeType = mimeType;
+            
+            Console.WriteLine("File ready to send with message");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error handling file selection: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+            
+            // Clear file input
+            if (fileInput?.Element != null)
+            {
+                await JSRuntime.InvokeVoidAsync("eval", $"document.querySelector('#{fileInput.Element.Value.Id}').value = ''");
+            }
+        }
+    }
+
+    private void ShowImageModal(string? imageUrl)
+    {
+        if (!string.IsNullOrEmpty(imageUrl))
+        {
+            selectedImageUrl = imageUrl;
+            showImageModal = true;
+            StateHasChanged();
+        }
+    }
+
+    private void CloseImageModal()
+    {
+        showImageModal = false;
+        selectedImageUrl = null;
+        StateHasChanged();
+    }
+
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return "?";
+        
+        var words = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length == 1)
+            return words[0].Substring(0, Math.Min(2, words[0].Length)).ToUpper();
+        
+        return (words[0].Substring(0, 1) + words[1].Substring(0, 1)).ToUpper();
+    }
+
+    private string GetReactionEmoji(ReactionType type) => type switch
+    {
+        ReactionType.Like => "👍",
+        ReactionType.Love => "❤️",
+        ReactionType.Laugh => "😂",
+        ReactionType.Sad => "😢",
+        ReactionType.Angry => "😠",
+        ReactionType.Wow => "😮",
+        _ => "👍"
+    };
+
+    private string FormatTime(DateTime time)
+    {
+        // Debug logging
+        Console.WriteLine($"FormatTime: Original time: {time} (Kind: {time.Kind})");
+        
+        // Convert UTC time to local time
+        var localTime = time.Kind == DateTimeKind.Utc ? time.ToLocalTime() : time;
+        var now = DateTime.Now;
+        var diff = now - localTime;
+        
+        Console.WriteLine($"FormatTime: Local time: {localTime}, Now: {now}, Diff: {diff}");
+
+        if (diff.TotalMinutes < 1)
+            return "právě teď";
+        if (diff.TotalMinutes < 60)
+            return $"{(int)diff.TotalMinutes}min";
+        if (diff.TotalHours < 24)
+            return $"{(int)diff.TotalHours}h";
+        if (diff.TotalDays < 7)
+            return $"{(int)diff.TotalDays}d";
+        
+        return localTime.ToString("dd.MM. HH:mm");
+    }
+
+    private string GetFullTime(DateTime time)
+    {
+        // Convert UTC to local time and show full timestamp
+        var localTime = time.Kind == DateTimeKind.Utc ? time.ToLocalTime() : time;
+        return localTime.ToString("dd.MM.yyyy HH:mm:ss");
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] suffixes = { "B", "KB", "MB", "GB" };
+        int counter = 0;
+        decimal number = bytes;
+        
+        while (Math.Round(number / 1024) >= 1)
+        {
+            number = number / 1024;
+            counter++;
+        }
+        
+        return $"{number:n1} {suffixes[counter]}";
+    }
+
+    private string GetFullFileUrl(string? fileUrl)
+    {
+        if (string.IsNullOrEmpty(fileUrl))
+            return string.Empty;
+            
+        // If already absolute URL, return as is
+        if (fileUrl.StartsWith("http://") || fileUrl.StartsWith("https://"))
+            return fileUrl;
+            
+        // Add backend base URL for relative URLs
+        var baseUrl = "http://localhost:5129";
+        return $"{baseUrl}{(fileUrl.StartsWith('/') ? fileUrl : '/' + fileUrl)}";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        SignalRService.MessageReceived -= OnMessageReceived;
+        SignalRService.ReactionAdded -= OnReactionAdded;
+        SignalRService.ReactionRemoved -= OnReactionRemoved;
+        SignalRService.ConnectionStateChanged -= OnConnectionStateChanged;
+        
+        if (selectedChat != null)
+        {
+            await SignalRService.LeaveChatAsync(selectedChat.Id);
+        }
+    }
+}

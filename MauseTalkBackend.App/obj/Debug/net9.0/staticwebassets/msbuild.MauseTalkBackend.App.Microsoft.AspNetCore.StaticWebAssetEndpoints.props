@@ -553,16 +553,16 @@
       <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"145401"},{"Name":"Content-Type","Value":"text/javascript"},{"Name":"ETag","Value":"\u0022\u002BUW802wgVfnjaSbdwyHLlU7AVplb0WToOlvN1CnzIac=\u0022"},{"Name":"Last-Modified","Value":"Mon, 10 Nov 2025 19:23:46 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/MauseTalkBackend.App/MauseTalkBackend.App.bundle.scp.css">
-      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\MauseTalkBackend.App.s25psah7jl.bundle.scp.css'))</AssetFile>
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\MauseTalkBackend.App.l8d67sudvk.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
-      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A\u002BIXPOtE="}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"5782"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u00229LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A\u002BIXPOtE=\u0022"},{"Name":"Last-Modified","Value":"Mon, 10 Nov 2025 19:56:48 GMT"}]]]></ResponseHeaders>
+      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6\u002BLY3Vw="}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"5782"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6\u002BLY3Vw=\u0022"},{"Name":"Last-Modified","Value":"Tue, 11 Nov 2025 18:48:09 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
-    <StaticWebAssetEndpoint Include="_content/MauseTalkBackend.App/MauseTalkBackend.App.s25psah7jl.bundle.scp.css">
-      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\MauseTalkBackend.App.s25psah7jl.bundle.scp.css'))</AssetFile>
+    <StaticWebAssetEndpoint Include="_content/MauseTalkBackend.App/MauseTalkBackend.App.l8d67sudvk.bundle.scp.css">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\MauseTalkBackend.App.l8d67sudvk.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
-      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"s25psah7jl"},{"Name":"integrity","Value":"sha256-9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A\u002BIXPOtE="},{"Name":"label","Value":"_content/MauseTalkBackend.App/MauseTalkBackend.App.bundle.scp.css"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"5782"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u00229LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A\u002BIXPOtE=\u0022"},{"Name":"Last-Modified","Value":"Mon, 10 Nov 2025 19:56:48 GMT"}]]]></ResponseHeaders>
+      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"l8d67sudvk"},{"Name":"integrity","Value":"sha256-ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6\u002BLY3Vw="},{"Name":"label","Value":"_content/MauseTalkBackend.App/MauseTalkBackend.App.bundle.scp.css"}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"5782"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6\u002BLY3Vw=\u0022"},{"Name":"Last-Modified","Value":"Tue, 11 Nov 2025 18:48:09 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
   </ItemGroup>
 </Project>

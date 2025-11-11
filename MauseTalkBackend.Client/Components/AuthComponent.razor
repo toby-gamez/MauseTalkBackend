@@ -1,0 +1,359 @@
+@using MauseTalkBackend.Client.Services
+@inject AuthService AuthService
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>🐭 MauseChat</h1>
+            <p class="subtitle">Realtime chat pro přátele</p>
+        </div>
+
+        <div class="auth-tabs">
+            <button class="tab-button @(isLogin ? "active" : "")" @onclick="() => SetMode(true)">
+                Přihlášení
+            </button>
+            <button class="tab-button @(!isLogin ? "active" : "")" @onclick="() => SetMode(false)">
+                Registrace
+            </button>
+        </div>
+
+        @if (isLogin)
+        {
+            <EditForm Model="loginModel" OnValidSubmit="HandleLogin" class="auth-form">
+                <DataAnnotationsValidator />
+                
+                <div class="form-group">
+                    <label for="username">Uživatelské jméno:</label>
+                    <InputText id="username" @bind-Value="loginModel.Username" class="form-input" placeholder="vase_jmeno" />
+                    <ValidationMessage For="() => loginModel.Username" class="validation-error" />
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Heslo:</label>
+                    <InputText type="password" id="password" @bind-Value="loginModel.Password" class="form-input" placeholder="••••••••" />
+                    <ValidationMessage For="() => loginModel.Password" class="validation-error" />
+                </div>
+
+                <button type="submit" class="submit-button" disabled="@isLoading">
+                    @if (isLoading)
+                    {
+                        <span class="spinner"></span>
+                        <span>Přihlašuji...</span>
+                    }
+                    else
+                    {
+                        <span>🚀 Přihlásit se</span>
+                    }
+                </button>
+            </EditForm>
+        }
+        else
+        {
+            <EditForm Model="registerModel" OnValidSubmit="HandleRegister" class="auth-form">
+                <DataAnnotationsValidator />
+                
+                <div class="form-group">
+                    <label for="username">Uživatelské jméno:</label>
+                    <InputText id="username" @bind-Value="registerModel.Username" class="form-input" placeholder="vase_jmeno" />
+                    <ValidationMessage For="() => registerModel.Username" class="validation-error" />
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <InputText id="email" @bind-Value="registerModel.Email" class="form-input" placeholder="vas@email.cz" />
+                    <ValidationMessage For="() => registerModel.Email" class="validation-error" />
+                </div>
+
+                <div class="form-group">
+                    <label for="displayName">Zobrazované jméno (volitelné):</label>
+                    <InputText id="displayName" @bind-Value="registerModel.DisplayName" class="form-input" placeholder="Vaše celé jméno" />
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Heslo:</label>
+                    <InputText type="password" id="password" @bind-Value="registerModel.Password" class="form-input" placeholder="••••••••" />
+                    <ValidationMessage For="() => registerModel.Password" class="validation-error" />
+                </div>
+
+                <button type="submit" class="submit-button" disabled="@isLoading">
+                    @if (isLoading)
+                    {
+                        <span class="spinner"></span>
+                        <span>Registruji...</span>
+                    }
+                    else
+                    {
+                        <span>✨ Registrovat se</span>
+                    }
+                </button>
+            </EditForm>
+        }
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="error-message">
+                ⚠️ @errorMessage
+            </div>
+        }
+
+        @if (successMessage != null)
+        {
+            <div class="success-message">
+                ✅ @successMessage
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .auth-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 1rem;
+    }
+
+    .auth-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 400px;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @@keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .auth-header h1 {
+        font-size: 2.5rem;
+        margin: 0;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .subtitle {
+        color: #666;
+        margin: 0.5rem 0 0 0;
+        font-size: 1rem;
+    }
+
+    .auth-tabs {
+        display: flex;
+        border-radius: 8px;
+        background: #f5f5f5;
+        padding: 4px;
+        margin-bottom: 1.5rem;
+    }
+
+    .tab-button {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: none;
+        border-radius: 6px;
+        background: transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+
+    .tab-button.active {
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        color: #667eea;
+    }
+
+    .auth-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        color: #333;
+        font-size: 0.9rem;
+    }
+
+    .form-input {
+        padding: 0.75rem 1rem;
+        border: 2px solid #e1e1e1;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .submit-button {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 1rem;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .submit-button:hover:not(:disabled) {
+        transform: translateY(-2px);
+    }
+
+    .submit-button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top: 2px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .validation-error {
+        color: #e74c3c;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+    }
+
+    .error-message {
+        background: #ffebee;
+        color: #c62828;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 1rem;
+        border-left: 4px solid #c62828;
+    }
+
+    .success-message {
+        background: #e8f5e8;
+        color: #2e7d32;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 1rem;
+        border-left: 4px solid #2e7d32;
+    }
+</style>
+
+@code {
+    private bool isLogin = true;
+    private bool isLoading = false;
+    private string? errorMessage = null;
+    private string? successMessage = null;
+    
+    private LoginRequest loginModel = new();
+    private RegisterRequest registerModel = new();
+
+    private void SetMode(bool login)
+    {
+        isLogin = login;
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private async Task HandleLogin()
+    {
+        if (isLoading) return;
+        
+        isLoading = true;
+        errorMessage = null;
+        
+        try
+        {
+            var result = await AuthService.LoginAsync(loginModel);
+            
+            if (result.Success)
+            {
+                successMessage = "Úspěšně přihlášen! Přesměrováváme...";
+                // Navigation will be handled by App.razor when auth state changes
+            }
+            else
+            {
+                errorMessage = result.Message ?? "Chyba při přihlašování";
+                if (result.Errors?.Any() == true)
+                {
+                    errorMessage += ": " + string.Join(", ", result.Errors);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Neočekávaná chyba: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleRegister()
+    {
+        if (isLoading) return;
+        
+        isLoading = true;
+        errorMessage = null;
+        
+        try
+        {
+            var result = await AuthService.RegisterAsync(registerModel);
+            
+            if (result.Success)
+            {
+                successMessage = "Úspěšně zaregistrován! Přesměrováváme...";
+                // Navigation will be handled by App.razor when auth state changes
+            }
+            else
+            {
+                errorMessage = result.Message ?? "Chyba při registraci";
+                if (result.Errors?.Any() == true)
+                {
+                    errorMessage += ": " + string.Join(", ", result.Errors);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Neočekávaná chyba: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

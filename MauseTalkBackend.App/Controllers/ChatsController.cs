@@ -236,8 +236,8 @@ public class ChatsController : ControllerBase
             Description = chat.Description,
             Type = chat.Type,
             CreatedBy = MapToUserDto(chat.CreatedBy),
-            CreatedAt = chat.CreatedAt,
-            LastActivityAt = chat.LastActivityAt,
+            CreatedAt = DateTime.SpecifyKind(chat.CreatedAt, DateTimeKind.Utc),
+            LastActivityAt = DateTime.SpecifyKind(chat.LastActivityAt, DateTimeKind.Utc),
             Users = chat.ChatUsers?.Select(MapToChatUserDto) ?? Enumerable.Empty<ChatUserDto>(),
             LastMessage = chat.Messages?.OrderByDescending(m => m.CreatedAt).FirstOrDefault() is Message lastMsg 
                 ? MapToMessageDto(lastMsg) 
@@ -276,9 +276,10 @@ public class ChatsController : ControllerBase
             {
                 Id = r.Id,
                 MessageId = r.MessageId,
+                UserId = r.UserId.ToString(),
                 User = MapToUserDto(r.User),
                 Type = r.Type,
-                CreatedAt = r.CreatedAt
+                CreatedAt = DateTime.SpecifyKind(r.CreatedAt, DateTimeKind.Utc)
             }) ?? Enumerable.Empty<ReactionDto>()
         };
     }
@@ -292,8 +293,8 @@ public class ChatsController : ControllerBase
             Email = user.Email,
             DisplayName = user.DisplayName,
             AvatarUrl = user.AvatarUrl,
-            CreatedAt = user.CreatedAt,
-            LastSeenAt = user.LastSeenAt,
+            CreatedAt = DateTime.SpecifyKind(user.CreatedAt, DateTimeKind.Utc),
+            LastSeenAt = DateTime.SpecifyKind(user.LastSeenAt, DateTimeKind.Utc),
             IsOnline = user.IsOnline
         };
     }

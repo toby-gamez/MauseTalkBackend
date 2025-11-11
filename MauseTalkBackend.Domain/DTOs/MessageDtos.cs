@@ -33,6 +33,7 @@ public class ReactionDto
 {
     public Guid Id { get; set; }
     public Guid MessageId { get; set; }
+    public string UserId { get; set; } = string.Empty;
     public UserDto User { get; set; } = null!;
     public ReactionType Type { get; set; }
     public DateTime CreatedAt { get; set; }

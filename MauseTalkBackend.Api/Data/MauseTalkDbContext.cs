@@ -14,6 +14,7 @@ public class MauseTalkDbContext : DbContext
     public DbSet<Message> Messages { get; set; }
     public DbSet<Reaction> Reactions { get; set; }
     public DbSet<ChatUser> ChatUsers { get; set; }
+    public DbSet<InviteLink> InviteLinks { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -95,6 +96,24 @@ public class MauseTalkDbContext : DbContext
             
             // User can be in a chat only once
             entity.HasIndex(e => new { e.ChatId, e.UserId }).IsUnique();
+        });
+
+        // InviteLink configuration
+        modelBuilder.Entity<InviteLink>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.InviteCode).IsRequired().HasMaxLength(50);
+            entity.HasIndex(e => e.InviteCode).IsUnique();
+            
+            entity.HasOne(e => e.Chat)
+                .WithMany()
+                .HasForeignKey(e => e.ChatId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.CreatedBy)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedById)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         base.OnModelCreating(modelBuilder);

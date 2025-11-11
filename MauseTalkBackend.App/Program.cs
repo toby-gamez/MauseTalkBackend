@@ -3,6 +3,7 @@ using MauseTalkBackend.Api.Repositories;
 using MauseTalkBackend.Api.Services;
 using MauseTalkBackend.App.Hubs;
 using MauseTalkBackend.Domain.Interfaces;
+using MauseTalkBackend.Domain.DTOs;
 using MauseTalkBackend.Shared.Constants;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -49,12 +50,17 @@ builder.Services.AddSignalR();
 // Add CORS
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(builder =>
+    options.AddDefaultPolicy(policy =>
     {
-        builder
-            .AllowAnyOrigin()
+        policy
+            .WithOrigins(
+                "http://localhost:5261", 
+                "https://localhost:5261",
+                "https://localhost:7189"
+            )
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
@@ -78,6 +84,7 @@ builder.Services.AddDbContext<MauseTalkDbContext>(options =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IInviteLinkRepository, InviteLinkRepository>();
 
 // Add services
 builder.Services.AddScoped<IFileService, FileService>();
@@ -132,17 +139,58 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Apply database migrations
+// Apply database migrations and seed data
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<MauseTalkDbContext>();
     context.Database.Migrate();
+    
+    // Seed test user
+    var authService = scope.ServiceProvider.GetRequiredService<AuthService>();
+    try
+    {
+        var testUser = new MauseTalkBackend.Domain.DTOs.CreateUserDto
+        {
+            Username = "testuser",
+            Email = "test@example.com", 
+            Password = "password123",
+            DisplayName = "Test User"
+        };
+        
+        // Check if user already exists
+        var userRepo = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+        var existingUser = await userRepo.GetByUsernameAsync("testuser");
+        
+        if (existingUser == null)
+        {
+            await authService.RegisterAsync(testUser);
+            Console.WriteLine("✅ Test user 'testuser' created successfully!");
+        }
+        else
+        {
+            Console.WriteLine("ℹ️ Test user 'testuser' already exists");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"⚠️ Error creating test user: {ex.Message}");
+    }
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // Disabled for development
+
+app.UseCors(); // CORS must be before authentication
+
 app.UseStaticFiles();
 
-app.UseCors();
+// Serve uploaded files
+var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "uploads");
+Directory.CreateDirectory(uploadsPath);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsPath),
+    RequestPath = "/uploads"
+});
 
 app.UseAuthentication();
 app.UseAuthorization();

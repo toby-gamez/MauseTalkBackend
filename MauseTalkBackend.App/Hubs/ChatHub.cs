@@ -29,6 +29,18 @@ public class ChatHub : Hub
             .SendAsync("UserTyping", new { Username = username, IsTyping = false });
     }
 
+    public async Task SendMessage(object message)
+    {
+        // For now, just acknowledge the message was received
+        // In a full implementation, this would save to database and broadcast
+        Console.WriteLine($"Received message from SignalR: {System.Text.Json.JsonSerializer.Serialize(message)}");
+        
+        // TODO: Implement proper message handling
+        // 1. Validate message
+        // 2. Save to database via MessageService
+        // 3. Broadcast to chat group
+    }
+
     public override async Task OnConnectedAsync()
     {
         var userId = Context.User?.GetUserId();

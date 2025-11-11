@@ -1,10 +1,11 @@
+/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Shared/bin/Debug/net9.0/MauseTalkBackend.Shared.deps.json
+/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Shared/bin/Debug/net9.0/MauseTalkBackend.Shared.dll
+/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Shared/bin/Debug/net9.0/MauseTalkBackend.Shared.pdb
 /home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Shared/obj/Debug/net9.0/MauseTalkBackend.Shared.GeneratedMSBuildEditorConfig.editorconfig
 /home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Shared/obj/Debug/net9.0/MauseTalkBackend.Shared.AssemblyInfoInputs.cache
 /home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Shared/obj/Debug/net9.0/MauseTalkBackend.Shared.AssemblyInfo.cs
 /home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Shared/obj/Debug/net9.0/MauseTalkBackend.Shared.csproj.CoreCompileInputs.cache
-/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Shared/bin/Debug/net9.0/MauseTalkBackend.Shared.deps.json
-/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Shared/bin/Debug/net9.0/MauseTalkBackend.Shared.dll
-/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Shared/bin/Debug/net9.0/MauseTalkBackend.Shared.pdb
+/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Shared/obj/Debug/net9.0/MauseTalkBackend.Shared.sourcelink.json
 /home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Shared/obj/Debug/net9.0/MauseTalkBackend.Shared.dll
 /home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Shared/obj/Debug/net9.0/refint/MauseTalkBackend.Shared.dll
 /home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.Shared/obj/Debug/net9.0/MauseTalkBackend.Shared.pdb

@@ -828,23 +828,23 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\lib\bootstrap\dist\js\bootstrap.min.js.map'))</OriginalItemSpec>
     </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\MauseTalkBackend.App.s25psah7jl.bundle.scp.css'))">
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\MauseTalkBackend.App.l8d67sudvk.bundle.scp.css'))">
       <SourceType>Package</SourceType>
       <SourceId>MauseTalkBackend.App</SourceId>
       <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
       <BasePath>_content/MauseTalkBackend.App</BasePath>
-      <RelativePath>MauseTalkBackend.App.s25psah7jl.bundle.scp.css</RelativePath>
+      <RelativePath>MauseTalkBackend.App.l8d67sudvk.bundle.scp.css</RelativePath>
       <AssetKind>All</AssetKind>
       <AssetMode>Reference</AssetMode>
       <AssetRole>Primary</AssetRole>
       <RelatedAsset></RelatedAsset>
       <AssetTraitName>ScopedCss</AssetTraitName>
       <AssetTraitValue>ProjectBundle</AssetTraitValue>
-      <Fingerprint>s25psah7jl</Fingerprint>
-      <Integrity>9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE=</Integrity>
+      <Fingerprint>l8d67sudvk</Fingerprint>
+      <Integrity>ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\MauseTalkBackend.App.s25psah7jl.bundle.scp.css'))</OriginalItemSpec>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\MauseTalkBackend.App.l8d67sudvk.bundle.scp.css'))</OriginalItemSpec>
     </StaticWebAsset>
   </ItemGroup>
 </Project>

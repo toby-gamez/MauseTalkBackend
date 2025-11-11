@@ -1,0 +1,53 @@
+﻿@page "/"
+@using MauseTalkBackend.Client.Services
+@inject AuthService AuthService
+@implements IDisposable
+
+<PageTitle>MauseChat</PageTitle>
+
+@if (isAuthenticated)
+{
+    <ChatComponent />
+}
+else
+{
+    <AuthComponent />
+}
+
+<style>
+    .welcome {
+        padding: 2rem;
+        text-align: center;
+        color: #333;
+    }
+    
+    .welcome h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+</style>
+
+@code {
+    private bool isAuthenticated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthService.AuthStateChanged += OnAuthStateChanged;
+        isAuthenticated = await AuthService.InitializeAsync();
+    }
+
+    private void OnAuthStateChanged(bool authenticated)
+    {
+        isAuthenticated = authenticated;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        AuthService.AuthStateChanged -= OnAuthStateChanged;
+    }
+}

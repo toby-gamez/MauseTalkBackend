@@ -1,0 +1,15 @@
+MauseTalkBackend.Client/obj/*
+MauseTalkBackend.Client/bin/*
+MauseTalkBackend.App/obj/*
+MauseTalkBackend.App/bin/*
+MauseTalkBackend.Api/obj/*
+MauseTalkBackend.Api/bin/*
+MauseTalkBackend.Shared/obj/*
+MauseTalkBackend.Shared/bin/*
+MauseTalkBackend.Domain/obj/*
+MauseTalkBackend.Domain/bin/*
+MauseTalkBackend.Api/bin/*
+MauseTalkBackend.Api/bin/Debug/*
+MauseTalkBackend.Api/Migrations/*
+MauseTalkBackend.Api/bin/Debug/net9.0/*
+MauseTalkBackend.Api/obj/*

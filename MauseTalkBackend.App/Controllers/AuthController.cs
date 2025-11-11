@@ -20,10 +20,19 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<ActionResult<ApiResponse<UserDto>>> Register([FromBody] CreateUserDto createUserDto)
+    public async Task<ActionResult<ApiResponse<UserDto>>> Register([FromBody] RegisterRequest registerRequest)
     {
         try
         {
+            // Convert RegisterRequest to CreateUserDto
+            var createUserDto = new CreateUserDto
+            {
+                Username = registerRequest.Username,
+                Email = registerRequest.Email,
+                Password = registerRequest.Password,
+                DisplayName = registerRequest.DisplayName
+            };
+            
             var user = await _authService.RegisterAsync(createUserDto);
             return Ok(ApiResponse<UserDto>.SuccessResult(user, "User registered successfully"));
         }
@@ -38,21 +47,36 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<ApiResponse<LoginResultDto>>> Login([FromBody] LoginDto loginDto)
+    public async Task<ActionResult<ApiResponse<AuthResponse>>> Login([FromBody] LoginRequest loginRequest)
     {
         try
         {
+            // Convert LoginRequest to LoginDto
+            var loginDto = new LoginDto
+            {
+                Username = loginRequest.Username,
+                Password = loginRequest.Password
+            };
+            
             var result = await _authService.LoginAsync(loginDto);
             if (result == null)
             {
-                return Unauthorized(ApiResponse<LoginResultDto>.ErrorResult("Invalid username or password"));
+                return Unauthorized(ApiResponse<AuthResponse>.ErrorResult("Invalid username or password"));
             }
 
-            return Ok(ApiResponse<LoginResultDto>.SuccessResult(result, "Login successful"));
+            // Convert LoginResultDto to AuthResponse
+            var authResponse = new AuthResponse
+            {
+                User = result.User,
+                AccessToken = result.AccessToken,
+                RefreshToken = result.RefreshToken
+            };
+
+            return Ok(ApiResponse<AuthResponse>.SuccessResult(authResponse, "Login successful"));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, ApiResponse<LoginResultDto>.ErrorResult("Internal server error", new[] { ex.Message }));
+            return StatusCode(500, ApiResponse<AuthResponse>.ErrorResult("Internal server error", new[] { ex.Message }));
         }
     }
 
@@ -69,5 +93,11 @@ public class AuthController : ControllerBase
         {
             return StatusCode(500, ApiResponse.ErrorResult("Internal server error", new[] { ex.Message }));
         }
+    }
+
+    [HttpGet("test")]
+    public IActionResult Test()
+    {
+        return Ok(new { message = "API is working", timestamp = DateTime.Now });
     }
 }

@@ -31,7 +31,7 @@ public class MessageRepository : IMessageRepository
             .Include(m => m.User)
             .Include(m => m.Reactions)
                 .ThenInclude(r => r.User)
-            .OrderByDescending(m => m.CreatedAt)
+            .OrderBy(m => m.CreatedAt)  // Changed from OrderByDescending to OrderBy for oldest first
             .Skip(skip)
             .Take(take)
             .ToListAsync();

@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "pkK9ikAvENfQy+iKBRF3wm1M+SS1GLgpAzTmrDGI7RI=",
+  "Hash": "sYas8r++UWVlHxu9LJr/q31TdHuZOs+dQNZ2BNxk9xw=",
   "Source": "MauseTalkBackend.App",
   "BasePath": "_content/MauseTalkBackend.App",
   "Mode": "Default",
@@ -17,12 +17,12 @@
   ],
   "Assets": [
     {
-      "Identity": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/0hddh38u8m-s25psah7jl.gz",
+      "Identity": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/0hddh38u8m-l8d67sudvk.gz",
       "SourceId": "MauseTalkBackend.App",
       "SourceType": "Computed",
       "ContentRoot": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/",
       "BasePath": "_content/MauseTalkBackend.App",
-      "RelativePath": "MauseTalkBackend.App#[.{fingerprint=s25psah7jl}]!.bundle.scp.css.gz",
+      "RelativePath": "MauseTalkBackend.App#[.{fingerprint=l8d67sudvk}]!.bundle.scp.css.gz",
       "AssetKind": "All",
       "AssetMode": "Reference",
       "AssetRole": "Alternative",
@@ -31,8 +31,8 @@
       "RelatedAsset": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/scopedcss/projectbundle/MauseTalkBackend.App.bundle.scp.css",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "g2l67spxm2",
-      "Integrity": "KNduZK4iEZRFepHtNBXJNw5GOKVZjXIRZpVlsRHkgbE=",
+      "Fingerprint": "zrkltoczid",
+      "Integrity": "kYYc+2duuNuagfyw6YWu9Q1upFoAMdw7naCo1hUrwTc=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/scopedcss/projectbundle/MauseTalkBackend.App.bundle.scp.css"
@@ -689,12 +689,12 @@
       "OriginalItemSpec": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/wwwroot/lib/bootstrap/dist/css/bootstrap-utilities.rtl.min.css"
     },
     {
-      "Identity": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/rg7bryrrbe-s25psah7jl.gz",
+      "Identity": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/rg7bryrrbe-l8d67sudvk.gz",
       "SourceId": "MauseTalkBackend.App",
       "SourceType": "Computed",
       "ContentRoot": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/",
       "BasePath": "_content/MauseTalkBackend.App",
-      "RelativePath": "MauseTalkBackend.App#[.{fingerprint=s25psah7jl}]?.styles.css.gz",
+      "RelativePath": "MauseTalkBackend.App#[.{fingerprint=l8d67sudvk}]?.styles.css.gz",
       "AssetKind": "All",
       "AssetMode": "CurrentProject",
       "AssetRole": "Alternative",
@@ -703,8 +703,8 @@
       "RelatedAsset": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/scopedcss/bundle/MauseTalkBackend.App.styles.css",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "g2l67spxm2",
-      "Integrity": "KNduZK4iEZRFepHtNBXJNw5GOKVZjXIRZpVlsRHkgbE=",
+      "Fingerprint": "zrkltoczid",
+      "Integrity": "kYYc+2duuNuagfyw6YWu9Q1upFoAMdw7naCo1hUrwTc=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/scopedcss/bundle/MauseTalkBackend.App.styles.css"
@@ -1018,8 +1018,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "ScopedCss",
       "AssetTraitValue": "ApplicationBundle",
-      "Fingerprint": "s25psah7jl",
-      "Integrity": "9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE=",
+      "Fingerprint": "l8d67sudvk",
+      "Integrity": "ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/scopedcss/bundle/MauseTalkBackend.App.styles.css"
@@ -1039,8 +1039,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "ScopedCss",
       "AssetTraitValue": "ProjectBundle",
-      "Fingerprint": "s25psah7jl",
-      "Integrity": "9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE=",
+      "Fingerprint": "l8d67sudvk",
+      "Integrity": "ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/scopedcss/projectbundle/MauseTalkBackend.App.bundle.scp.css"
@@ -15507,7 +15507,7 @@
     },
     {
       "Route": "MauseTalkBackend.App.bundle.scp.css",
-      "AssetFile": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/0hddh38u8m-s25psah7jl.gz",
+      "AssetFile": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/0hddh38u8m-l8d67sudvk.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -15526,11 +15526,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"KNduZK4iEZRFepHtNBXJNw5GOKVZjXIRZpVlsRHkgbE=\""
+          "Value": "\"kYYc+2duuNuagfyw6YWu9Q1upFoAMdw7naCo1hUrwTc=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 10 Nov 2025 19:56:48 GMT"
+          "Value": "Tue, 11 Nov 2025 18:48:09 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -15550,13 +15550,13 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE=\""
+          "Value": "W/\"ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE="
+          "Value": "sha256-ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw="
         }
       ]
     },
@@ -15579,11 +15579,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE=\""
+          "Value": "\"ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 10 Nov 2025 19:56:48 GMT"
+          "Value": "Tue, 11 Nov 2025 18:48:09 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -15593,13 +15593,13 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE="
+          "Value": "sha256-ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw="
         }
       ]
     },
     {
       "Route": "MauseTalkBackend.App.bundle.scp.css.gz",
-      "AssetFile": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/0hddh38u8m-s25psah7jl.gz",
+      "AssetFile": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/0hddh38u8m-l8d67sudvk.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -15616,11 +15616,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"KNduZK4iEZRFepHtNBXJNw5GOKVZjXIRZpVlsRHkgbE=\""
+          "Value": "\"kYYc+2duuNuagfyw6YWu9Q1upFoAMdw7naCo1hUrwTc=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 10 Nov 2025 19:56:48 GMT"
+          "Value": "Tue, 11 Nov 2025 18:48:09 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -15638,13 +15638,13 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-KNduZK4iEZRFepHtNBXJNw5GOKVZjXIRZpVlsRHkgbE="
+          "Value": "sha256-kYYc+2duuNuagfyw6YWu9Q1upFoAMdw7naCo1hUrwTc="
         }
       ]
     },
     {
-      "Route": "MauseTalkBackend.App.s25psah7jl.bundle.scp.css",
-      "AssetFile": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/0hddh38u8m-s25psah7jl.gz",
+      "Route": "MauseTalkBackend.App.l8d67sudvk.bundle.scp.css",
+      "AssetFile": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/0hddh38u8m-l8d67sudvk.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -15663,11 +15663,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"KNduZK4iEZRFepHtNBXJNw5GOKVZjXIRZpVlsRHkgbE=\""
+          "Value": "\"kYYc+2duuNuagfyw6YWu9Q1upFoAMdw7naCo1hUrwTc=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 10 Nov 2025 19:56:48 GMT"
+          "Value": "Tue, 11 Nov 2025 18:48:09 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -15687,13 +15687,13 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE=\""
+          "Value": "W/\"ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "s25psah7jl"
+          "Value": "l8d67sudvk"
         },
         {
           "Name": "label",
@@ -15701,12 +15701,12 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE="
+          "Value": "sha256-ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw="
         }
       ]
     },
     {
-      "Route": "MauseTalkBackend.App.s25psah7jl.bundle.scp.css",
+      "Route": "MauseTalkBackend.App.l8d67sudvk.bundle.scp.css",
       "AssetFile": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/scopedcss/projectbundle/MauseTalkBackend.App.bundle.scp.css",
       "Selectors": [],
       "ResponseHeaders": [
@@ -15724,11 +15724,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE=\""
+          "Value": "\"ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 10 Nov 2025 19:56:48 GMT"
+          "Value": "Tue, 11 Nov 2025 18:48:09 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -15738,7 +15738,7 @@
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "s25psah7jl"
+          "Value": "l8d67sudvk"
         },
         {
           "Name": "label",
@@ -15746,13 +15746,13 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE="
+          "Value": "sha256-ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw="
         }
       ]
     },
     {
-      "Route": "MauseTalkBackend.App.s25psah7jl.bundle.scp.css.gz",
-      "AssetFile": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/0hddh38u8m-s25psah7jl.gz",
+      "Route": "MauseTalkBackend.App.l8d67sudvk.bundle.scp.css.gz",
+      "AssetFile": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/0hddh38u8m-l8d67sudvk.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -15769,11 +15769,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"KNduZK4iEZRFepHtNBXJNw5GOKVZjXIRZpVlsRHkgbE=\""
+          "Value": "\"kYYc+2duuNuagfyw6YWu9Q1upFoAMdw7naCo1hUrwTc=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 10 Nov 2025 19:56:48 GMT"
+          "Value": "Tue, 11 Nov 2025 18:48:09 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -15791,7 +15791,7 @@
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "s25psah7jl"
+          "Value": "l8d67sudvk"
         },
         {
           "Name": "label",
@@ -15799,13 +15799,13 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-KNduZK4iEZRFepHtNBXJNw5GOKVZjXIRZpVlsRHkgbE="
+          "Value": "sha256-kYYc+2duuNuagfyw6YWu9Q1upFoAMdw7naCo1hUrwTc="
         }
       ]
     },
     {
-      "Route": "MauseTalkBackend.App.s25psah7jl.styles.css",
-      "AssetFile": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/rg7bryrrbe-s25psah7jl.gz",
+      "Route": "MauseTalkBackend.App.l8d67sudvk.styles.css",
+      "AssetFile": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/rg7bryrrbe-l8d67sudvk.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -15824,11 +15824,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"KNduZK4iEZRFepHtNBXJNw5GOKVZjXIRZpVlsRHkgbE=\""
+          "Value": "\"kYYc+2duuNuagfyw6YWu9Q1upFoAMdw7naCo1hUrwTc=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 10 Nov 2025 19:56:48 GMT"
+          "Value": "Tue, 11 Nov 2025 18:48:09 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -15848,13 +15848,13 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE=\""
+          "Value": "W/\"ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "s25psah7jl"
+          "Value": "l8d67sudvk"
         },
         {
           "Name": "label",
@@ -15862,12 +15862,12 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE="
+          "Value": "sha256-ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw="
         }
       ]
     },
     {
-      "Route": "MauseTalkBackend.App.s25psah7jl.styles.css",
+      "Route": "MauseTalkBackend.App.l8d67sudvk.styles.css",
       "AssetFile": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/scopedcss/bundle/MauseTalkBackend.App.styles.css",
       "Selectors": [],
       "ResponseHeaders": [
@@ -15885,11 +15885,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE=\""
+          "Value": "\"ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 10 Nov 2025 19:56:48 GMT"
+          "Value": "Tue, 11 Nov 2025 18:48:09 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -15899,7 +15899,7 @@
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "s25psah7jl"
+          "Value": "l8d67sudvk"
         },
         {
           "Name": "label",
@@ -15907,13 +15907,13 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE="
+          "Value": "sha256-ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw="
         }
       ]
     },
     {
-      "Route": "MauseTalkBackend.App.s25psah7jl.styles.css.gz",
-      "AssetFile": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/rg7bryrrbe-s25psah7jl.gz",
+      "Route": "MauseTalkBackend.App.l8d67sudvk.styles.css.gz",
+      "AssetFile": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/rg7bryrrbe-l8d67sudvk.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -15930,11 +15930,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"KNduZK4iEZRFepHtNBXJNw5GOKVZjXIRZpVlsRHkgbE=\""
+          "Value": "\"kYYc+2duuNuagfyw6YWu9Q1upFoAMdw7naCo1hUrwTc=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 10 Nov 2025 19:56:48 GMT"
+          "Value": "Tue, 11 Nov 2025 18:48:09 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -15952,7 +15952,7 @@
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "s25psah7jl"
+          "Value": "l8d67sudvk"
         },
         {
           "Name": "label",
@@ -15960,13 +15960,13 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-KNduZK4iEZRFepHtNBXJNw5GOKVZjXIRZpVlsRHkgbE="
+          "Value": "sha256-kYYc+2duuNuagfyw6YWu9Q1upFoAMdw7naCo1hUrwTc="
         }
       ]
     },
     {
       "Route": "MauseTalkBackend.App.styles.css",
-      "AssetFile": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/rg7bryrrbe-s25psah7jl.gz",
+      "AssetFile": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/rg7bryrrbe-l8d67sudvk.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -15985,11 +15985,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"KNduZK4iEZRFepHtNBXJNw5GOKVZjXIRZpVlsRHkgbE=\""
+          "Value": "\"kYYc+2duuNuagfyw6YWu9Q1upFoAMdw7naCo1hUrwTc=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 10 Nov 2025 19:56:48 GMT"
+          "Value": "Tue, 11 Nov 2025 18:48:09 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -16009,13 +16009,13 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE=\""
+          "Value": "W/\"ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE="
+          "Value": "sha256-ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw="
         }
       ]
     },
@@ -16038,11 +16038,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE=\""
+          "Value": "\"ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 10 Nov 2025 19:56:48 GMT"
+          "Value": "Tue, 11 Nov 2025 18:48:09 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -16052,13 +16052,13 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-9LkUSlyy9pxaZTPkN15mJCcLxRFyMjO/i3/A+IXPOtE="
+          "Value": "sha256-ewDiaa1wMiHxnU8eNni4fqGh2A2/d8CCejEs6+LY3Vw="
         }
       ]
     },
     {
       "Route": "MauseTalkBackend.App.styles.css.gz",
-      "AssetFile": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/rg7bryrrbe-s25psah7jl.gz",
+      "AssetFile": "/home/tobias/RiderProjects/MauseTalkBackend/MauseTalkBackend.App/obj/Debug/net9.0/compressed/rg7bryrrbe-l8d67sudvk.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -16075,11 +16075,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"KNduZK4iEZRFepHtNBXJNw5GOKVZjXIRZpVlsRHkgbE=\""
+          "Value": "\"kYYc+2duuNuagfyw6YWu9Q1upFoAMdw7naCo1hUrwTc=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 10 Nov 2025 19:56:48 GMT"
+          "Value": "Tue, 11 Nov 2025 18:48:09 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -16097,7 +16097,7 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-KNduZK4iEZRFepHtNBXJNw5GOKVZjXIRZpVlsRHkgbE="
+          "Value": "sha256-kYYc+2duuNuagfyw6YWu9Q1upFoAMdw7naCo1hUrwTc="
         }
       ]
     }

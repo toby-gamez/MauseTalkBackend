@@ -432,17 +432,18 @@ const connection = new signalR.HubConnectionBuilder()
 ### ✅ Implementováno
 
 - 👥 **Uživatelé**: registrace, přihlášení, profily
-- 💬 **Chaty**: skupinové i přímé
+- 💬 **Chaty**: skupinové i přímé  
 - 📨 **Zprávy**: text, obrázky, hlasovky, soubory
 - 😍 **Reakce**: 6 typů (like, love, laugh, sad, angry, wow)
 - 📁 **Soubory**: upload/download s podporou různých typů
 - 🔐 **Autentizace**: JWT tokeny
 - ⚡ **Realtime**: SignalR pro živou komunikaci
-- 🗃️ **Databáze**: SQLite s EF Core
+- 🗃️ **Databáze**: SQL Server s EF Core
+- 🎨 **Blazor Client**: Kompletní WebAssembly chat aplikace
 
 ### 📊 Limity souborů
 - **Obrázky**: 10MB (jpg, png, gif, webp)
-- **Audio**: 25MB (mp3, wav, m4a, ogg, aac)
+- **Audio**: 25MB (mp3, wav, m4a, ogg, aac)  
 - **Dokumenty**: 50MB (pdf, txt, doc, docx)
 
 ## 🛠️ API Endpoints
@@ -498,10 +499,26 @@ cd MauseTalkBackend.App
 dotnet run
 ```
 
-Aplikace poběží na: `http://localhost:5129`
+- **Backend API**: `http://localhost:5129`
+- **Blazor WebAssembly Client**: `http://localhost:5261`
+
+### 🖥️ Spuštění Blazor klienta
+```bash
+# V novém terminálu
+cd MauseTalkBackend.Client
+dotnet run
+```
 
 ### 📋 Swagger UI
 `http://localhost:5129/swagger`
+
+### 🧪 Testovací účet
+```json
+{
+  "username": "testuser",
+  "password": "password123"  
+}
+```
 
 ## ⚙️ Konfigurace
 
