@@ -13,3 +13,7 @@ MauseTalkBackend.Api/bin/Debug/*
 MauseTalkBackend.Api/Migrations/*
 MauseTalkBackend.Api/bin/Debug/net9.0/*
 MauseTalkBackend.Api/obj/*
+MauseTalkBackend.App/bin/Debug/net9.0/MauseTalkBackend.Shared.*
+*/obj/*
+*/bin/*
+MauseTalkBackend.Shared/bin/Debug/net9.0/*

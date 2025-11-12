@@ -1739,7 +1739,7 @@
             Console.WriteLine($"API response: Id={inviteLink.Id}, ChatId={inviteLink.ChatId}");
             
             // Generate full URL
-            var baseUrl = "https://localhost:5129";
+            var baseUrl = "http://localhost:5261";
             generatedInviteLink = $"{baseUrl}/invite/{inviteLink.InviteCode}";
             
             Console.WriteLine($"Generated invite link: {generatedInviteLink}");

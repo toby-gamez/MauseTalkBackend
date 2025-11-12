@@ -1,6 +1,7 @@
 using MauseTalkBackend.Domain.DTOs;
 using MauseTalkBackend.Domain.Interfaces;
 using MauseTalkBackend.Shared.Constants;
+using MauseTalkBackend.Shared.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -24,7 +25,7 @@ public class InvitesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<InviteLinkDto>> CreateInviteLink([FromBody] CreateInviteLinkDto createInviteLinkDto)
     {
-        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException());
+        var userId = User.GetUserId();
         
         // Check if user has permission to create invite links for this chat
         var chat = await _chatRepository.GetByIdAsync(createInviteLinkDto.ChatId);
@@ -54,8 +55,15 @@ public class InvitesController : ControllerBase
         bool isUserAlreadyMember = false;
         if (User.Identity?.IsAuthenticated == true)
         {
-            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty);
-            isUserAlreadyMember = await _chatRepository.IsUserInChatAsync(inviteLink.ChatId, userId);
+            try
+            {
+                var userId = User.GetUserId();
+                isUserAlreadyMember = await _chatRepository.IsUserInChatAsync(inviteLink.ChatId, userId);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // User claims are not valid, treat as not authenticated
+            }
         }
 
         var inviteLinkInfo = new InviteLinkInfoDto
@@ -76,7 +84,7 @@ public class InvitesController : ControllerBase
     [HttpPost("{code}/join")]
     public async Task<ActionResult<ChatDto>> JoinChatViaInvite(string code)
     {
-        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException());
+        var userId = User.GetUserId();
         
         try
         {
@@ -97,7 +105,7 @@ public class InvitesController : ControllerBase
     [HttpGet("chat/{chatId}")]
     public async Task<ActionResult<IEnumerable<InviteLinkDto>>> GetChatInviteLinks(Guid chatId)
     {
-        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException());
+        var userId = User.GetUserId();
         
         var isUserInChat = await _chatRepository.IsUserInChatAsync(chatId, userId);
         if (!isUserInChat)
@@ -111,7 +119,7 @@ public class InvitesController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteInviteLink(Guid id)
     {
-        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException());
+        var userId = User.GetUserId();
         
         var inviteLink = await _inviteLinkRepository.GetByIdAsync(id);
         if (inviteLink == null)
@@ -129,7 +137,7 @@ public class InvitesController : ControllerBase
     [HttpPut("{id}/deactivate")]
     public async Task<ActionResult> DeactivateInviteLink(Guid id)
     {
-        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException());
+        var userId = User.GetUserId();
         
         var inviteLink = await _inviteLinkRepository.GetByIdAsync(id);
         if (inviteLink == null)

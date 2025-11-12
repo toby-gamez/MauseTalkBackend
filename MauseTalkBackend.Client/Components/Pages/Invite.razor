@@ -1,0 +1,482 @@
+@page "/invite/{code}"
+@using MauseTalkBackend.Domain.DTOs
+@using MauseTalkBackend.Shared.Models
+@using MauseTalkBackend.Client.Services
+@inject IInviteService InviteService
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<div class="invite-page">
+    @if (isLoading)
+    {
+        <div class="loading">
+            <h2>Načítání pozvánky...</h2>
+        </div>
+    }
+    else if (inviteInfo != null)
+    {
+        <div class="invite-card">
+            <h2>Pozvánka do chatu</h2>
+            
+            <div class="chat-info">
+                <h3>@inviteInfo.ChatName</h3>
+                @if (!string.IsNullOrEmpty(inviteInfo.ChatDescription))
+                {
+                    <p class="chat-description">@inviteInfo.ChatDescription</p>
+                }
+                <p class="member-count">👥 @inviteInfo.MemberCount členů</p>
+            </div>
+            
+            @if (!inviteInfo.IsActive)
+            {
+                <div class="error">
+                    ❌ Tato pozvánka už není aktivní
+                </div>
+            }
+            else if (inviteInfo.IsExpired)
+            {
+                <div class="error">
+                    ⏰ Tato pozvánka vypršela
+                </div>
+            }
+            else if (inviteInfo.IsUsageLimitReached)
+            {
+                <div class="error">
+                    🚫 Tato pozvánka dosáhla limitu použití
+                </div>
+            }
+            else if (inviteInfo.IsUserAlreadyMember)
+            {
+                <div class="info">
+                    ✅ Už jste členem tohoto chatu
+                    <button class="btn-primary" @onclick="GoToChat">
+                        Přejít na chat
+                    </button>
+                </div>
+            }
+            else if (!AuthService.IsAuthenticated)
+            {
+                <div class="auth-section">
+                    <div class="auth-header">
+                        <h3>Pro připojení k chatu se musíte přihlásit nebo registrovat</h3>
+                        <div class="auth-tabs">
+                            <button class="tab-btn @(isLoginMode ? "active" : "")" @onclick="() => SetAuthMode(true)">
+                                Přihlásit se
+                            </button>
+                            <button class="tab-btn @(!isLoginMode ? "active" : "")" @onclick="() => SetAuthMode(false)">
+                                Registrovat se
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="auth-form">
+                        @if (isLoginMode)
+                        {
+                            <!-- Login Form -->
+                            <EditForm Model="loginRequest" OnSubmit="HandleLogin">
+                                <div class="form-group">
+                                    <label>Uživatelské jméno:</label>
+                                    <InputText @bind-Value="loginRequest.Username" class="form-input" placeholder="Zadejte uživatelské jméno" />
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Heslo:</label>
+                                    <InputText @bind-Value="loginRequest.Password" type="password" class="form-input" placeholder="Zadejte heslo" />
+                                </div>
+                                
+                                <button type="submit" class="btn-primary full-width" disabled="@isAuthenticating">
+                                    @if (isAuthenticating)
+                                    {
+                                        <span>Přihlašování...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Přihlásit se</span>
+                                    }
+                                </button>
+                            </EditForm>
+                        }
+                        else
+                        {
+                            <!-- Register Form -->
+                            <EditForm Model="registerRequest" OnSubmit="HandleRegister">
+                                <div class="form-group">
+                                    <label>Uživatelské jméno:</label>
+                                    <InputText @bind-Value="registerRequest.Username" class="form-input" placeholder="Zvolte uživatelské jméno" />
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Email:</label>
+                                    <InputText @bind-Value="registerRequest.Email" type="email" class="form-input" placeholder="Zadejte email" />
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Zobrazované jméno:</label>
+                                    <InputText @bind-Value="registerRequest.DisplayName" class="form-input" placeholder="Vaše zobrazované jméno" />
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Heslo:</label>
+                                    <InputText @bind-Value="registerRequest.Password" type="password" class="form-input" placeholder="Zvolte heslo" />
+                                </div>
+                                
+                                <button type="submit" class="btn-primary full-width" disabled="@isAuthenticating">
+                                    @if (isAuthenticating)
+                                    {
+                                        <span>Registrování...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Registrovat se</span>
+                                    }
+                                </button>
+                            </EditForm>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(authErrorMessage))
+                        {
+                            <div class="error-message">
+                                @authErrorMessage
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="join-section">
+                    <p>Chcete se připojit k tomuto chatu?</p>
+                    <button class="btn-primary" @onclick="JoinChat" disabled="@isJoining">
+                        @if (isJoining)
+                        {
+                            <span>Připojování...</span>
+                        }
+                        else
+                        {
+                            <span>Připojit se</span>
+                        }
+                    </button>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="error">
+            <h2>Pozvánka nenalezena</h2>
+            <p>Tato pozvánka neexistuje nebo vypršela.</p>
+        </div>
+    }
+</div>
+
+<style>
+    .invite-page {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+        background: #f5f5f5;
+    }
+    
+    .invite-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        padding: 30px;
+        max-width: 400px;
+        width: 100%;
+        text-align: center;
+    }
+    
+    .chat-info h3 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .chat-description {
+        color: #666;
+        margin-bottom: 15px;
+    }
+    
+    .member-count {
+        color: #888;
+        font-size: 0.9em;
+        margin-bottom: 20px;
+    }
+    
+    .error {
+        background: #fee;
+        color: #c33;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+    }
+    
+    .info {
+        background: #f0f8ff;
+        color: #0066cc;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+    }
+    
+    .join-section {
+        margin-top: 20px;
+    }
+    
+    .btn-primary {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        margin: 10px;
+    }
+    
+    .btn-primary:hover {
+        background: #0056b3;
+    }
+    
+    .btn-primary:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+    
+    .loading {
+        text-align: center;
+        color: #666;
+    }
+    
+    .auth-section {
+        margin-top: 20px;
+        text-align: left;
+    }
+    
+    .auth-header h3 {
+        margin-bottom: 15px;
+        text-align: center;
+        font-size: 1.1em;
+    }
+    
+    .auth-tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .tab-btn {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+    }
+    
+    .tab-btn.active {
+        border-bottom-color: #007bff;
+        color: #007bff;
+        font-weight: bold;
+    }
+    
+    .auth-form {
+        padding-top: 10px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+        font-weight: 500;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+    }
+    
+    .full-width {
+        width: 100%;
+    }
+    
+    .error-message {
+        background: #fee;
+        color: #c33;
+        padding: 10px;
+        border-radius: 6px;
+        margin-top: 15px;
+        font-size: 14px;
+    }
+</style>
+
+@code {
+    [Parameter] public string Code { get; set; } = string.Empty;
+    
+    private InviteLinkInfoDto? inviteInfo;
+    private bool isLoading = true;
+    private bool isJoining = false;
+    
+    // Auth form variables
+    private bool isLoginMode = true;
+    private bool isAuthenticating = false;
+    private string authErrorMessage = string.Empty;
+    private LoginRequest loginRequest = new();
+    private RegisterRequest registerRequest = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInviteInfo();
+    }
+    
+    private async Task LoadInviteInfo()
+    {
+        try
+        {
+            isLoading = true;
+            inviteInfo = await InviteService.GetInviteLinkInfoAsync(Code);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading invite info: {ex.Message}");
+            inviteInfo = null;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    
+    private async Task JoinChat()
+    {
+        if (inviteInfo == null) return;
+        
+        try
+        {
+            isJoining = true;
+            var chat = await InviteService.JoinChatViaInviteAsync(Code);
+            
+            // Redirect to chat
+            Navigation.NavigateTo("/");
+            
+            // Show success message
+            await JSRuntime.InvokeVoidAsync("alert", $"Úspěšně jste se připojili k chatu '{chat.Name}'!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error joining chat: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("alert", $"Chyba při připojování: {ex.Message}");
+        }
+        finally
+        {
+            isJoining = false;
+        }
+    }
+    
+    private void GoToChat()
+    {
+        Navigation.NavigateTo("/");
+    }
+    
+    private void RedirectToLogin()
+    {
+        Navigation.NavigateTo($"/login?returnUrl={Uri.EscapeDataString($"/invite/{Code}")}");
+    }
+    
+    private void SetAuthMode(bool loginMode)
+    {
+        isLoginMode = loginMode;
+        authErrorMessage = string.Empty;
+    }
+    
+    private async Task HandleLogin()
+    {
+        if (string.IsNullOrEmpty(loginRequest.Username) || string.IsNullOrEmpty(loginRequest.Password))
+        {
+            authErrorMessage = "Prosím vyplňte všechna pole";
+            return;
+        }
+        
+        try
+        {
+            isAuthenticating = true;
+            authErrorMessage = string.Empty;
+            
+            var result = await AuthService.LoginAsync(loginRequest);
+            
+            if (result.Success)
+            {
+                // Reload invite info to check membership status
+                await LoadInviteInfo();
+            }
+            else
+            {
+                authErrorMessage = result.Message ?? "Chyba při přihlašování";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Login error: {ex.Message}");
+            authErrorMessage = "Chyba při přihlašování";
+        }
+        finally
+        {
+            isAuthenticating = false;
+        }
+    }
+    
+    private async Task HandleRegister()
+    {
+        if (string.IsNullOrEmpty(registerRequest.Username) || 
+            string.IsNullOrEmpty(registerRequest.Email) || 
+            string.IsNullOrEmpty(registerRequest.Password))
+        {
+            authErrorMessage = "Prosím vyplňte všechna povinná pole";
+            return;
+        }
+        
+        try
+        {
+            isAuthenticating = true;
+            authErrorMessage = string.Empty;
+            
+            var result = await AuthService.RegisterAsync(registerRequest);
+            
+            if (result.Success)
+            {
+                // Reload invite info to check membership status
+                await LoadInviteInfo();
+            }
+            else
+            {
+                authErrorMessage = result.Message ?? "Chyba při registraci";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Register error: {ex.Message}");
+            authErrorMessage = "Chyba při registraci";
+        }
+        finally
+        {
+            isAuthenticating = false;
+        }
+    }
+}

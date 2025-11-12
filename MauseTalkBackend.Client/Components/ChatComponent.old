@@ -411,6 +411,8 @@
     .modal-header {
         display: flex;
         justify-content: space-between;
+        
+        
         align-items: center;
         padding: 1.5rem;
         background: linear-gradient(135deg, #667eea, #764ba2);
