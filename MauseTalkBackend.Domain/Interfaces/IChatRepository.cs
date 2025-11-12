@@ -16,4 +16,7 @@ public interface IChatRepository
     Task UpdateLastReadAsync(Guid chatId, Guid userId);
     Task<bool> IsUserInChatAsync(Guid chatId, Guid userId);
     Task UpdateLastActivityAsync(Guid chatId);
+    Task<bool> HasUserRole(Guid chatId, Guid userId, ChatUserRole minimumRole);
+    Task<Chat> UpdateChatSettingsAsync(Guid chatId, UpdateChatDto updateDto);
+    Task<ChatUser> UpdateUserRoleAsync(Guid chatId, Guid userId, ChatUserRole newRole);
 }

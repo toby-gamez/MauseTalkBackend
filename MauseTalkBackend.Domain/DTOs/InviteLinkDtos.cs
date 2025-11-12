@@ -12,6 +12,11 @@ public class InviteLinkDto
     public int? UsageLimit { get; set; }
     public int UsedCount { get; set; }
     public bool IsActive { get; set; }
+    public bool IsSuspended { get; set; }
+    public bool IsBlocked { get; set; }
+    public string? SuspensionReason { get; set; }
+    public DateTime? SuspendedAt { get; set; }
+    public UserDto? SuspendedBy { get; set; }
     public DateTime CreatedAt { get; set; }
     public UserDto CreatedBy { get; set; } = null!;
 }
@@ -33,4 +38,16 @@ public class InviteLinkInfoDto
     public bool IsUsageLimitReached { get; set; }
     public bool IsActive { get; set; }
     public bool IsUserAlreadyMember { get; set; }
+}
+
+public class SuspendInviteLinkDto
+{
+    public string? Reason { get; set; }
+}
+
+public class UpdateInviteLinkDto
+{
+    public DateTime? ExpiresAt { get; set; }
+    public int? UsageLimit { get; set; }
+    public bool? IsActive { get; set; }
 }

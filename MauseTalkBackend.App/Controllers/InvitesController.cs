@@ -35,6 +35,15 @@ public class InvitesController : ControllerBase
         var isUserInChat = await _chatRepository.IsUserInChatAsync(createInviteLinkDto.ChatId, userId);
         if (!isUserInChat)
             return Forbid("You are not a member of this chat");
+            
+        // Check chat settings
+        if (!chat.AllowInvites)
+            return Forbid("Invite links are disabled for this chat");
+            
+        // Check if user can create invite links
+        var isAdmin = await _chatRepository.HasUserRole(createInviteLinkDto.ChatId, userId, MauseTalkBackend.Domain.Entities.ChatUserRole.Admin);
+        if (!chat.AllowMembersToInvite && !isAdmin)
+            return Forbid("Only admins can create invite links for this chat");
         
         var inviteLink = await _inviteLinkRepository.CreateAsync(createInviteLinkDto, userId);
         
@@ -111,7 +120,12 @@ public class InvitesController : ControllerBase
         if (!isUserInChat)
             return Forbid("You are not a member of this chat");
         
-        var inviteLinks = await _inviteLinkRepository.GetChatInviteLinksAsync(chatId);
+        // Admins/owners can see all invite links, members see only active ones
+        var isAdmin = await _chatRepository.HasUserRole(chatId, userId, MauseTalkBackend.Domain.Entities.ChatUserRole.Admin);
+        
+        var inviteLinks = isAdmin 
+            ? await _inviteLinkRepository.GetAllChatInviteLinksAsync(chatId)
+            : await _inviteLinkRepository.GetChatInviteLinksAsync(chatId);
         
         return Ok(inviteLinks.Select(MapToInviteLinkDto));
     }
@@ -152,6 +166,101 @@ public class InvitesController : ControllerBase
         return NoContent();
     }
 
+    [HttpPut("{id}")]
+    public async Task<ActionResult<InviteLinkDto>> UpdateInviteLink(Guid id, [FromBody] UpdateInviteLinkDto updateDto)
+    {
+        var userId = User.GetUserId();
+        
+        var inviteLink = await _inviteLinkRepository.GetByIdAsync(id);
+        if (inviteLink == null)
+            return NotFound("Invite link not found");
+            
+        // Only admins/owners can update invite links
+        var isAdmin = await _chatRepository.HasUserRole(inviteLink.ChatId, userId, MauseTalkBackend.Domain.Entities.ChatUserRole.Admin);
+        if (!isAdmin)
+            return Forbid("You don't have permission to update invite links");
+        
+        var updatedInviteLink = await _inviteLinkRepository.UpdateAsync(id, updateDto);
+        
+        return Ok(MapToInviteLinkDto(updatedInviteLink));
+    }
+
+    [HttpPut("{id}/suspend")]
+    public async Task<ActionResult<InviteLinkDto>> SuspendInviteLink(Guid id, [FromBody] SuspendInviteLinkDto suspendDto)
+    {
+        var userId = User.GetUserId();
+        
+        var inviteLink = await _inviteLinkRepository.GetByIdAsync(id);
+        if (inviteLink == null)
+            return NotFound("Invite link not found");
+            
+        // Only admins/owners can suspend invite links
+        var isAdmin = await _chatRepository.HasUserRole(inviteLink.ChatId, userId, MauseTalkBackend.Domain.Entities.ChatUserRole.Admin);
+        if (!isAdmin)
+            return Forbid("You don't have permission to suspend invite links");
+        
+        var suspendedInviteLink = await _inviteLinkRepository.SuspendAsync(id, userId, suspendDto.Reason);
+        
+        return Ok(MapToInviteLinkDto(suspendedInviteLink));
+    }
+
+    [HttpPut("{id}/unsuspend")]
+    public async Task<ActionResult<InviteLinkDto>> UnsuspendInviteLink(Guid id)
+    {
+        var userId = User.GetUserId();
+        
+        var inviteLink = await _inviteLinkRepository.GetByIdAsync(id);
+        if (inviteLink == null)
+            return NotFound("Invite link not found");
+            
+        // Only admins/owners can unsuspend invite links
+        var isAdmin = await _chatRepository.HasUserRole(inviteLink.ChatId, userId, MauseTalkBackend.Domain.Entities.ChatUserRole.Admin);
+        if (!isAdmin)
+            return Forbid("You don't have permission to unsuspend invite links");
+        
+        var unsuspendedInviteLink = await _inviteLinkRepository.UnsuspendAsync(id);
+        
+        return Ok(MapToInviteLinkDto(unsuspendedInviteLink));
+    }
+
+    [HttpPut("{id}/block")]
+    public async Task<ActionResult<InviteLinkDto>> BlockInviteLink(Guid id)
+    {
+        var userId = User.GetUserId();
+        
+        var inviteLink = await _inviteLinkRepository.GetByIdAsync(id);
+        if (inviteLink == null)
+            return NotFound("Invite link not found");
+            
+        // Only owners can block invite links
+        var isOwner = await _chatRepository.HasUserRole(inviteLink.ChatId, userId, MauseTalkBackend.Domain.Entities.ChatUserRole.Owner);
+        if (!isOwner)
+            return Forbid("You don't have permission to block invite links");
+        
+        var blockedInviteLink = await _inviteLinkRepository.BlockAsync(id, userId);
+        
+        return Ok(MapToInviteLinkDto(blockedInviteLink));
+    }
+
+    [HttpPut("{id}/unblock")]
+    public async Task<ActionResult<InviteLinkDto>> UnblockInviteLink(Guid id)
+    {
+        var userId = User.GetUserId();
+        
+        var inviteLink = await _inviteLinkRepository.GetByIdAsync(id);
+        if (inviteLink == null)
+            return NotFound("Invite link not found");
+            
+        // Only owners can unblock invite links
+        var isOwner = await _chatRepository.HasUserRole(inviteLink.ChatId, userId, MauseTalkBackend.Domain.Entities.ChatUserRole.Owner);
+        if (!isOwner)
+            return Forbid("You don't have permission to unblock invite links");
+        
+        var unblockedInviteLink = await _inviteLinkRepository.UnblockAsync(id);
+        
+        return Ok(MapToInviteLinkDto(unblockedInviteLink));
+    }
+
     private static InviteLinkDto MapToInviteLinkDto(Domain.Entities.InviteLink inviteLink)
     {
         return new InviteLinkDto
@@ -164,6 +273,20 @@ public class InvitesController : ControllerBase
             UsageLimit = inviteLink.UsageLimit,
             UsedCount = inviteLink.UsedCount,
             IsActive = inviteLink.IsActive,
+            IsSuspended = inviteLink.IsSuspended,
+            IsBlocked = inviteLink.IsBlocked,
+            SuspensionReason = inviteLink.SuspensionReason,
+            SuspendedAt = inviteLink.SuspendedAt,
+            SuspendedBy = inviteLink.SuspendedBy != null ? new UserDto
+            {
+                Id = inviteLink.SuspendedBy.Id,
+                Username = inviteLink.SuspendedBy.Username,
+                Email = inviteLink.SuspendedBy.Email,
+                DisplayName = inviteLink.SuspendedBy.DisplayName,
+                AvatarUrl = inviteLink.SuspendedBy.AvatarUrl,
+                IsOnline = inviteLink.SuspendedBy.IsOnline,
+                LastSeenAt = inviteLink.SuspendedBy.LastSeenAt
+            } : null,
             CreatedAt = inviteLink.CreatedAt,
             CreatedBy = new UserDto
             {
@@ -185,9 +308,13 @@ public class InvitesController : ControllerBase
             Id = chat.Id,
             Name = chat.Name,
             Description = chat.Description,
+            AvatarUrl = chat.AvatarUrl,
             Type = chat.Type,
             CreatedAt = chat.CreatedAt,
             LastActivityAt = chat.LastActivityAt,
+            AllowInvites = chat.AllowInvites,
+            AllowMembersToInvite = chat.AllowMembersToInvite,
+            MaxMembers = chat.MaxMembers,
             CreatedBy = new UserDto
             {
                 Id = chat.CreatedBy.Id,

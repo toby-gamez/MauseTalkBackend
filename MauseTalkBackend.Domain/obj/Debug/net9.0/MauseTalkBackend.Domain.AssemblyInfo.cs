@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MauseTalkBackend.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d257a78be9bd57c93ef776c661495ebb15f2efee")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+60383c522253135925e8009426c184dcdc2003a0")]
 [assembly: System.Reflection.AssemblyProductAttribute("MauseTalkBackend.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MauseTalkBackend.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

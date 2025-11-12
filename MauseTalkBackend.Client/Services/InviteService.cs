@@ -11,6 +11,11 @@ public interface IInviteService
     Task<List<InviteLinkDto>> GetChatInviteLinksAsync(Guid chatId);
     Task DeleteInviteLinkAsync(Guid id);
     Task DeactivateInviteLinkAsync(Guid id);
+    Task<InviteLinkDto> UpdateInviteLinkAsync(Guid id, UpdateInviteLinkDto updateDto);
+    Task<InviteLinkDto> SuspendInviteLinkAsync(Guid id, SuspendInviteLinkDto suspendDto);
+    Task<InviteLinkDto> UnsuspendInviteLinkAsync(Guid id);
+    Task<InviteLinkDto> BlockInviteLinkAsync(Guid id);
+    Task<InviteLinkDto> UnblockInviteLinkAsync(Guid id);
 }
 
 public class InviteService : IInviteService
@@ -102,5 +107,45 @@ public class InviteService : IInviteService
     {
         var response = await _httpClient.PutAsync($"/api/invites/{id}/deactivate", null);
         response.EnsureSuccessStatusCode();
+    }
+
+    public async Task<InviteLinkDto> UpdateInviteLinkAsync(Guid id, UpdateInviteLinkDto updateDto)
+    {
+        SetAuthorizationHeader();
+        var response = await _httpClient.PutAsJsonAsync($"/api/invites/{id}", updateDto);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<InviteLinkDto>() ?? throw new InvalidOperationException("Failed to update invite link");
+    }
+
+    public async Task<InviteLinkDto> SuspendInviteLinkAsync(Guid id, SuspendInviteLinkDto suspendDto)
+    {
+        SetAuthorizationHeader();
+        var response = await _httpClient.PutAsJsonAsync($"/api/invites/{id}/suspend", suspendDto);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<InviteLinkDto>() ?? throw new InvalidOperationException("Failed to suspend invite link");
+    }
+
+    public async Task<InviteLinkDto> UnsuspendInviteLinkAsync(Guid id)
+    {
+        SetAuthorizationHeader();
+        var response = await _httpClient.PutAsync($"/api/invites/{id}/unsuspend", null);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<InviteLinkDto>() ?? throw new InvalidOperationException("Failed to unsuspend invite link");
+    }
+
+    public async Task<InviteLinkDto> BlockInviteLinkAsync(Guid id)
+    {
+        SetAuthorizationHeader();
+        var response = await _httpClient.PutAsync($"/api/invites/{id}/block", null);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<InviteLinkDto>() ?? throw new InvalidOperationException("Failed to block invite link");
+    }
+
+    public async Task<InviteLinkDto> UnblockInviteLinkAsync(Guid id)
+    {
+        SetAuthorizationHeader();
+        var response = await _httpClient.PutAsync($"/api/invites/{id}/unblock", null);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<InviteLinkDto>() ?? throw new InvalidOperationException("Failed to unblock invite link");
     }
 }

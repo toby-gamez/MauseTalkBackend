@@ -83,30 +83,24 @@ public class ChatsController : ControllerBase
     }
 
     [HttpPut("{chatId:guid}")]
-    public async Task<ActionResult<ApiResponse<ChatDto>>> UpdateChat(Guid chatId, [FromBody] CreateChatDto updateChatDto)
+    public async Task<ActionResult<ApiResponse<ChatDto>>> UpdateChat(Guid chatId, [FromBody] UpdateChatDto updateChatDto)
     {
         try
         {
             var userId = User.GetUserId();
-            var chat = await _chatRepository.GetByIdAsync(chatId);
             
-            if (chat == null)
-            {
-                return NotFound(ApiResponse<ChatDto>.ErrorResult("Chat not found"));
-            }
-
             // Check if user is admin or owner
-            var chatUser = chat.ChatUsers.FirstOrDefault(cu => cu.UserId == userId);
-            if (chatUser == null || (chatUser.Role != ChatUserRole.Admin && chatUser.Role != ChatUserRole.Owner))
+            if (!await _chatRepository.HasUserRole(chatId, userId, ChatUserRole.Admin))
             {
                 return Forbid();
             }
-
-            chat.Name = updateChatDto.Name;
-            chat.Description = updateChatDto.Description;
             
-            var updatedChat = await _chatRepository.UpdateAsync(chat);
+            var updatedChat = await _chatRepository.UpdateChatSettingsAsync(chatId, updateChatDto);
             return Ok(ApiResponse<ChatDto>.SuccessResult(MapToChatDto(updatedChat), "Chat updated successfully"));
+        }
+        catch (ArgumentException ex)
+        {
+            return NotFound(ApiResponse<ChatDto>.ErrorResult(ex.Message));
         }
         catch (Exception ex)
         {
@@ -227,6 +221,38 @@ public class ChatsController : ControllerBase
         }
     }
 
+    [HttpPut("{chatId:guid}/users/role")]
+    public async Task<ActionResult<ApiResponse<ChatUserDto>>> UpdateUserRole(Guid chatId, [FromBody] UpdateChatUserRoleDto updateRoleDto)
+    {
+        try
+        {
+            var userId = User.GetUserId();
+            
+            // Only owners can change roles
+            if (!await _chatRepository.HasUserRole(chatId, userId, ChatUserRole.Owner))
+            {
+                return Forbid();
+            }
+            
+            // Cannot change owner role
+            if (updateRoleDto.Role == ChatUserRole.Owner)
+            {
+                return BadRequest(ApiResponse<ChatUserDto>.ErrorResult("Cannot assign owner role"));
+            }
+            
+            var updatedChatUser = await _chatRepository.UpdateUserRoleAsync(chatId, updateRoleDto.UserId, updateRoleDto.Role);
+            return Ok(ApiResponse<ChatUserDto>.SuccessResult(MapToChatUserDto(updatedChatUser), "User role updated successfully"));
+        }
+        catch (ArgumentException ex)
+        {
+            return NotFound(ApiResponse<ChatUserDto>.ErrorResult(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ApiResponse<ChatUserDto>.ErrorResult("Internal server error", new[] { ex.Message }));
+        }
+    }
+
     private static ChatDto MapToChatDto(Chat chat)
     {
         return new ChatDto
@@ -234,10 +260,14 @@ public class ChatsController : ControllerBase
             Id = chat.Id,
             Name = chat.Name,
             Description = chat.Description,
+            AvatarUrl = chat.AvatarUrl,
             Type = chat.Type,
             CreatedBy = MapToUserDto(chat.CreatedBy),
             CreatedAt = DateTime.SpecifyKind(chat.CreatedAt, DateTimeKind.Utc),
             LastActivityAt = DateTime.SpecifyKind(chat.LastActivityAt, DateTimeKind.Utc),
+            AllowInvites = chat.AllowInvites,
+            AllowMembersToInvite = chat.AllowMembersToInvite,
+            MaxMembers = chat.MaxMembers,
             Users = chat.ChatUsers?.Select(MapToChatUserDto) ?? Enumerable.Empty<ChatUserDto>(),
             LastMessage = chat.Messages?.OrderByDescending(m => m.CreatedAt).FirstOrDefault() is Message lastMsg 
                 ? MapToMessageDto(lastMsg) 

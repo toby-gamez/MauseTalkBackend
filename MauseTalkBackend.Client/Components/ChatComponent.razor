@@ -73,7 +73,14 @@
                             }
                             else
                             {
-                                <span>@GetInitials(chat.Name)</span>
+                                @if (!string.IsNullOrEmpty(chat.AvatarUrl))
+                                {
+                                    <img src="@chat.AvatarUrl" alt="Chat Avatar" />
+                                }
+                                else
+                                {
+                                    <span>@GetInitials(chat.Name)</span>
+                                }
                             }
                         </div>
                         <div class="chat-info">
@@ -146,6 +153,18 @@
                 @if (selectedChat.Type == ChatType.Group)
                 {
                     <div class="chat-actions-header">
+                        <button class="member-list-btn" @onclick="ShowMembersModal" title="Seznam členů">
+                            👥 @selectedChat.Users.Count()
+                        </button>
+                        @{
+                            var currentUserRole = GetCurrentUserRole(selectedChat);
+                        }
+                        @if (currentUserRole >= ChatUserRole.Admin)
+                        {
+                            <button class="settings-btn" @onclick="ShowSettingsModal" title="Nastavení chatu">
+                                ⚙️
+                            </button>
+                        }
                         <button class="share-chat-btn" @onclick="ShowShareModal" title="Sdílet chat">
                             🔗
                         </button>
@@ -154,7 +173,11 @@
                 <div class="chat-info-text">
                     @if (selectedChat.Type == ChatType.Group)
                     {
+                        var currentRole = GetCurrentUserRole(selectedChat);
                         <span>@selectedChat.Users.Count() členů</span>
+                        <span class="current-user-role" style="color: @GetRoleColor(currentRole)">
+                            • @GetRoleBadge(currentRole)
+                        </span>
                     }
                     else
                     {
@@ -398,18 +421,37 @@
                 }
                 else if (!string.IsNullOrEmpty(generatedInviteLink))
                 {
-                    <div class="invite-link-container">
-                        <label>Invite link:</label>
-                        <div class="invite-link-box">
-                            <input type="text" value="@generatedInviteLink" readonly class="invite-link-input" />
-                            <button class="copy-btn" @onclick="CopyInviteLink" title="Zkopírovat">
-                                📋
-                            </button>
+                    @if (generatedInviteLink.StartsWith("ERROR:") || generatedInviteLink.StartsWith("PERMISSION_ERROR:"))
+                    {
+                        <div class="error-container">
+                            <div class="error-icon">⚠️</div>
+                            <div class="error-message">
+                                @if (generatedInviteLink.StartsWith("PERMISSION_ERROR:"))
+                                {
+                                    @generatedInviteLink.Substring("PERMISSION_ERROR:".Length).Trim()
+                                }
+                                else
+                                {
+                                    @generatedInviteLink.Substring("ERROR:".Length).Trim()
+                                }
+                            </div>
                         </div>
-                        <p class="invite-info">
-                            Tento link můžete sdílet s lidmi, které chcete pozvat do chatu.
-                        </p>
-                    </div>
+                    }
+                    else
+                    {
+                        <div class="invite-link-container">
+                            <label>Invite link:</label>
+                            <div class="invite-link-box">
+                                <input type="text" value="@generatedInviteLink" readonly class="invite-link-input" />
+                                <button class="copy-btn" @onclick="CopyInviteLink" title="Zkopírovat">
+                                    📋
+                                </button>
+                            </div>
+                            <p class="invite-info">
+                                Tento link můžete sdílet s lidmi, které chcete pozvat do chatu.
+                            </p>
+                        </div>
+                    }
                 }
                 else
                 {
@@ -438,16 +480,21 @@
             
             <div class="modal-footer">
                 <button class="btn-secondary" @onclick="@(() => { if (!isGeneratingInvite) CloseShareModal(); })" disabled="@isGeneratingInvite">Zavřít</button>
-                <div>Debug: link='@generatedInviteLink' (length=@generatedInviteLink.Length), generating=@isGeneratingInvite</div>
-                <div>Debug: isEmpty=@string.IsNullOrEmpty(generatedInviteLink)</div>
                 @if (string.IsNullOrEmpty(generatedInviteLink) && !isGeneratingInvite)
                 {
-                    <button class="btn-primary" @onclick="GenerateInviteLink">
-                        ✅ Vytvořit link
-                    </button>
-                    <button class="btn-secondary" @onclick="TestGenerateLink">
-                        🧪 TEST link
-                    </button>
+                    @if (CanCreateInviteLink())
+                    {
+                        <button class="btn-primary" @onclick="GenerateInviteLink">
+                            ✅ Vytvořit link
+                        </button>
+                    }
+                    else
+                    {
+                        <div class="permission-warning">
+                            <span class="warning-icon">⚠️</span>
+                            <span class="warning-text">@GetInviteErrorMessage()</span>
+                        </div>
+                    }
                 }
                 else if (isGeneratingInvite)
                 {
@@ -455,6 +502,146 @@
                         ⏳ Vytváření...
                     </button>
                 }
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Members Modal -->
+@if (showMembersModal && selectedChat != null)
+{
+    <div class="modal-overlay" @onclick="CloseMembersModal">
+        <div class="modal-content large-modal" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3>👥 Členové chatu "@selectedChat.Name"</h3>
+                <button class="close-btn" @onclick="CloseMembersModal">×</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="members-list">
+                    @foreach (var member in selectedChat.Users.OrderBy(u => u.Role).ThenBy(u => u.User.DisplayName ?? u.User.Username))
+                    {
+                        <div class="member-item">
+                            <div class="member-avatar">
+                                @if (!string.IsNullOrEmpty(member.User.AvatarUrl))
+                                {
+                                    <img src="@member.User.AvatarUrl" alt="Avatar" />
+                                }
+                                else
+                                {
+                                    <span>@GetInitials(member.User.DisplayName ?? member.User.Username)</span>
+                                }
+                            </div>
+                            
+                            <div class="member-info">
+                                <div class="member-name">@(member.User.DisplayName ?? member.User.Username)</div>
+                                <div class="member-details">
+                                    <span class="role-badge" style="background-color: @GetRoleColor(member.Role)">
+                                        @GetRoleBadge(member.Role)
+                                    </span>
+                                    <span class="join-date">Připojil se: @member.JoinedAt.ToString("dd.MM.yyyy")</span>
+                                </div>
+                            </div>
+                            
+                            @{
+                                var currentUserRole = GetCurrentUserRole(selectedChat);
+                                var canManageUser = currentUserRole >= ChatUserRole.Admin && 
+                                                   member.User.Id != AuthService.CurrentUser?.Id &&
+                                                   member.Role < currentUserRole;
+                            }
+                            
+                            @if (canManageUser)
+                            {
+                                <div class="member-actions">
+                                    @if (member.Role == ChatUserRole.Member && currentUserRole >= ChatUserRole.Owner)
+                                    {
+                                        <button class="action-btn promote-btn" @onclick="() => PromoteUser(member.User.Id, ChatUserRole.Admin)" title="Povýšit na admin">
+                                            ⭐ Admin
+                                        </button>
+                                    }
+                                    @if (member.Role == ChatUserRole.Admin && currentUserRole >= ChatUserRole.Owner)
+                                    {
+                                        <button class="action-btn demote-btn" @onclick="() => PromoteUser(member.User.Id, ChatUserRole.Member)" title="Degradovat na člena">
+                                            👤 Člen
+                                        </button>
+                                    }
+                                    <button class="action-btn remove-btn" @onclick="() => RemoveMember(member.User.Id)" title="Odebrat z chatu">
+                                        🗑️
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-secondary" @onclick="CloseMembersModal">Zavřít</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Settings Modal -->
+@if (showSettingsModal && selectedChat != null)
+{
+    <div class="modal-overlay" @onclick="CloseSettingsModal">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3>⚙️ Nastavení chatu</h3>
+                <button class="close-btn" @onclick="CloseSettingsModal">×</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Název chatu:</label>
+                    <input @bind="editChatName" class="modal-input" />
+                </div>
+                
+                <div class="form-group">
+                    <label>Popis:</label>
+                    <textarea @bind="editChatDescription" class="modal-textarea" placeholder="Volitelný popis chatu"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Avatar URL:</label>
+                    <input @bind="editChatAvatarUrl" class="modal-input" placeholder="https://example.com/avatar.jpg" />
+                    @if (!string.IsNullOrEmpty(editChatAvatarUrl))
+                    {
+                        <div class="avatar-preview">
+                            <img src="@editChatAvatarUrl" alt="Náhled avatara" style="width: 50px; height: 50px; border-radius: 50%; margin-top: 0.5rem;" />
+                        </div>
+                    }
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" @bind="editAllowInvites" />
+                        Povolit pozvánky do chatu
+                    </label>
+                </div>
+                
+                @if (editAllowInvites)
+                {
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" @bind="editAllowMembersToInvite" />
+                            Členové mohou vytvářet pozvánky
+                        </label>
+                    </div>
+                }
+                
+                <div class="form-group">
+                    <label>Maximální počet členů:</label>
+                    <input type="number" @bind="editMaxMembers" min="2" max="1000" class="modal-input" />
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-secondary" @onclick="CloseSettingsModal">Zrušit</button>
+                <button class="btn-primary" @onclick="SaveChatSettings" disabled="@string.IsNullOrWhiteSpace(editChatName)">
+                    💾 Uložit
+                </button>
             </div>
         </div>
     </div>
@@ -670,7 +857,7 @@
         transition: opacity 0.2s;
         order: 10;
         position: absolute;
-        right: -50px;
+        right: -250px;
         top: 0;
     }
 
@@ -998,6 +1185,227 @@
         align-items: center;
         justify-content: space-between;
     }
+
+    /* Large Modal */
+    .large-modal {
+        max-width: 600px;
+        max-height: 80vh;
+    }
+
+    /* Member List Styles */
+    .member-list-btn, .settings-btn {
+        background: none;
+        border: none;
+        font-size: 1rem;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 6px;
+        transition: all 0.2s;
+        margin-right: 0.5rem;
+    }
+
+    .member-list-btn:hover, .settings-btn:hover {
+        background: rgba(0,0,0,0.1);
+        transform: scale(1.05);
+    }
+
+    .members-list {
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 0.5rem 0;
+    }
+
+    .member-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #e0e0e0;
+        gap: 1rem;
+    }
+
+    .member-item:last-child {
+        border-bottom: none;
+    }
+
+    .member-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+
+    .member-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .member-avatar span {
+        font-size: 1rem;
+    }
+
+    .member-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .member-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .member-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .role-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: white;
+        width: fit-content;
+    }
+
+    .join-date {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .member-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    .action-btn {
+        padding: 0.5rem 0.75rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+
+    .promote-btn {
+        background: #28a745;
+        color: white;
+    }
+
+    .promote-btn:hover {
+        background: #218838;
+        transform: translateY(-1px);
+    }
+
+    .demote-btn {
+        background: #ffc107;
+        color: #212529;
+    }
+
+    .demote-btn:hover {
+        background: #e0a800;
+        transform: translateY(-1px);
+    }
+
+    .remove-btn {
+        background: #dc3545;
+        color: white;
+    }
+
+    .remove-btn:hover {
+        background: #c82333;
+        transform: translateY(-1px);
+    }
+
+    /* Settings Form */
+    .form-group input[type="checkbox"] {
+        margin-right: 0.5rem;
+        transform: scale(1.2);
+    }
+
+    .form-group label {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .avatar-preview {
+        margin-top: 0.5rem;
+    }
+
+    .avatar-preview img {
+        border: 2px solid #e0e0e0;
+    }
+
+    /* Chat Actions Header */
+    .chat-actions-header {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    /* Current User Role */
+    .current-user-role {
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+
+    /* Error and Warning Styles */
+    .error-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: #ffe6e6;
+        border: 1px solid #ffb3b3;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+
+    .error-icon {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .error-message {
+        color: #d8000c;
+        font-weight: 500;
+        line-height: 1.4;
+    }
+
+    .permission-warning {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        color: #856404;
+    }
+
+    .warning-icon {
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .warning-text {
+        font-weight: 500;
+        line-height: 1.4;
+    }
 </style>
 
 @code {
@@ -1025,6 +1433,18 @@
     private string generatedInviteLink = string.Empty;
     private bool inviteNeverExpires = false;
     private int inviteExpiresInDays = 7;
+
+    // Members Modal
+    private bool showMembersModal = false;
+
+    // Settings Modal
+    private bool showSettingsModal = false;
+    private string editChatName = string.Empty;
+    private string editChatDescription = string.Empty;
+    private string editChatAvatarUrl = string.Empty;
+    private bool editAllowInvites = true;
+    private bool editAllowMembersToInvite = true;
+    private int editMaxMembers = 100;
 
     // Image Modal
     private bool showImageModal = false;
@@ -1680,6 +2100,37 @@
         return $"{baseUrl}{(fileUrl.StartsWith('/') ? fileUrl : '/' + fileUrl)}";
     }
 
+    private ChatUserRole GetCurrentUserRole(ChatDto chat)
+    {
+        var currentUserId = AuthService.CurrentUser?.Id;
+        if (currentUserId == null) return ChatUserRole.Member;
+
+        var chatUser = chat.Users.FirstOrDefault(u => u.User.Id == currentUserId);
+        return chatUser?.Role ?? ChatUserRole.Member;
+    }
+
+    private string GetRoleBadge(ChatUserRole role)
+    {
+        return role switch
+        {
+            ChatUserRole.Owner => "👑 Vlastník",
+            ChatUserRole.Admin => "⭐ Admin",
+            ChatUserRole.Member => "👤 Člen",
+            _ => "👤 Člen"
+        };
+    }
+
+    private string GetRoleColor(ChatUserRole role)
+    {
+        return role switch
+        {
+            ChatUserRole.Owner => "#ffd700",
+            ChatUserRole.Admin => "#ff6b6b",
+            ChatUserRole.Member => "#74c0fc",
+            _ => "#74c0fc"
+        };
+    }
+
     // Share Chat Methods
     private void ShowShareModal()
     {
@@ -1692,6 +2143,35 @@
             StateHasChanged();
         }
         Console.WriteLine($"Modal state: showShareModal={showShareModal}");
+    }
+
+    private bool CanCreateInviteLink()
+    {
+        if (selectedChat == null) return false;
+        
+        // Check if invites are allowed
+        if (!selectedChat.AllowInvites) return false;
+        
+        // Check if user can create invites
+        var currentRole = GetCurrentUserRole(selectedChat);
+        if (!selectedChat.AllowMembersToInvite && currentRole < ChatUserRole.Admin)
+            return false;
+            
+        return true;
+    }
+
+    private string GetInviteErrorMessage()
+    {
+        if (selectedChat == null) return "Chat nebyl nalezen.";
+        
+        if (!selectedChat.AllowInvites)
+            return "Pozvánky jsou pro tento chat zakázané.";
+            
+        var currentRole = GetCurrentUserRole(selectedChat);
+        if (!selectedChat.AllowMembersToInvite && currentRole < ChatUserRole.Admin)
+            return "Pouze administrátoři mohou vytvářet pozvánky do tohoto chatu.";
+            
+        return "Neznámá chyba.";
     }
 
     private void CloseShareModal()
@@ -1714,6 +2194,15 @@
         if (isGeneratingInvite)
         {
             Console.WriteLine("Already generating invite link");
+            return;
+        }
+
+        // Check if user can create invite links
+        if (!CanCreateInviteLink())
+        {
+            Console.WriteLine("User cannot create invite links - showing error");
+            generatedInviteLink = $"PERMISSION_ERROR: {GetInviteErrorMessage()}";
+            StateHasChanged();
             return;
         }
         
@@ -1751,8 +2240,8 @@
             Console.WriteLine($"Exception details: {ex}");
             Console.WriteLine($"Exception type: {ex.GetType().Name}");
             
-            // Set error message instead of empty string
-            generatedInviteLink = $"ERROR: {ex.Message}";
+            // Set friendly error message
+            generatedInviteLink = $"ERROR: Nepodařilo se vytvořit pozvánku. Zkuste to prosím znovu.";
         }
         finally
         {
@@ -1782,6 +2271,218 @@
             Console.WriteLine($"Error copying to clipboard: {ex.Message}");
             // Fallback: select text
             await JSRuntime.InvokeVoidAsync("selectText", ".invite-link-input");
+        }
+    }
+
+    // Members Modal Methods
+    private void ShowMembersModal()
+    {
+        showMembersModal = true;
+        StateHasChanged();
+    }
+
+    private void CloseMembersModal()
+    {
+        showMembersModal = false;
+        StateHasChanged();
+    }
+
+    private async Task PromoteUser(Guid userId, ChatUserRole newRole)
+    {
+        if (selectedChat == null) return;
+
+        try
+        {
+            // Optimistic UI update - change role immediately
+            var userToUpdate = selectedChat.Users.FirstOrDefault(u => u.User.Id == userId);
+            if (userToUpdate != null)
+            {
+                var originalRole = userToUpdate.Role; // Backup for rollback
+                Console.WriteLine($"[DEBUG] Changing role from {originalRole} to {newRole}");
+                userToUpdate.Role = newRole;
+                Console.WriteLine($"[DEBUG] Role updated in UI, calling StateHasChanged()");
+                StateHasChanged(); // Update UI immediately
+                
+                try
+                {
+                    // Send API request
+                    var updateRoleDto = new UpdateChatUserRoleDto
+                    {
+                        UserId = userId,
+                        Role = newRole
+                    };
+
+                    var response = await ChatService.UpdateUserRoleAsync(selectedChat.Id, updateRoleDto);
+                    if (!response.Success)
+                    {
+                        // Rollback on API error
+                        userToUpdate.Role = originalRole;
+                        StateHasChanged();
+                        Console.WriteLine($"Error updating user role: {response.Message}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[DEBUG] API call successful, role should stay {newRole}");
+                        Console.WriteLine($"[DEBUG] Current role in UI: {userToUpdate.Role}");
+                    }
+                }
+                catch (Exception apiEx)
+                {
+                    // Rollback on API exception
+                    userToUpdate.Role = originalRole;
+                    StateHasChanged();
+                    Console.WriteLine($"API exception updating user role: {apiEx.Message}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating user role: {ex.Message}");
+        }
+    }
+
+
+
+    private async Task RemoveMember(Guid userId)
+    {
+        if (selectedChat == null) return;
+
+        try
+        {
+            // Optimistic UI update - remove user immediately
+            var userToRemove = selectedChat.Users.FirstOrDefault(u => u.User.Id == userId);
+            if (userToRemove != null)
+            {
+                var originalUsers = selectedChat.Users.ToList(); // Backup for rollback
+                var usersList = selectedChat.Users.ToList();
+                usersList.Remove(userToRemove);
+                selectedChat.Users = usersList;
+                StateHasChanged(); // Update UI immediately
+                
+                try
+                {
+                    // Send API request
+                    var response = await ChatService.RemoveUserFromChatAsync(selectedChat.Id, userId);
+                    if (!response.Success)
+                    {
+                        // Rollback on API error
+                        selectedChat.Users = originalUsers;
+                        StateHasChanged();
+                        Console.WriteLine($"Error removing user: {response.Message}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"User removed successfully");
+                    }
+                }
+                catch (Exception apiEx)
+                {
+                    // Rollback on API exception
+                    selectedChat.Users = originalUsers;
+                    StateHasChanged();
+                    Console.WriteLine($"API exception removing user: {apiEx.Message}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error removing user: {ex.Message}");
+        }
+    }
+
+    // Settings Modal Methods
+    private void ShowSettingsModal()
+    {
+        if (selectedChat == null) return;
+
+        editChatName = selectedChat.Name;
+        editChatDescription = selectedChat.Description ?? string.Empty;
+        editChatAvatarUrl = selectedChat.AvatarUrl ?? string.Empty;
+        editAllowInvites = selectedChat.AllowInvites;
+        editAllowMembersToInvite = selectedChat.AllowMembersToInvite;
+        editMaxMembers = selectedChat.MaxMembers;
+
+        showSettingsModal = true;
+        StateHasChanged();
+    }
+
+    private void CloseSettingsModal()
+    {
+        showSettingsModal = false;
+        StateHasChanged();
+    }
+
+    private async Task SaveChatSettings()
+    {
+        if (selectedChat == null || string.IsNullOrWhiteSpace(editChatName)) return;
+
+        try
+        {
+            // Backup original values for rollback
+            var originalName = selectedChat.Name;
+            var originalDescription = selectedChat.Description;
+            var originalAvatarUrl = selectedChat.AvatarUrl;
+            var originalAllowInvites = selectedChat.AllowInvites;
+            var originalAllowMembersToInvite = selectedChat.AllowMembersToInvite;
+            var originalMaxMembers = selectedChat.MaxMembers;
+
+            // Optimistic UI update - change immediately
+            selectedChat.Name = editChatName.Trim();
+            selectedChat.Description = string.IsNullOrWhiteSpace(editChatDescription) ? null : editChatDescription.Trim();
+            selectedChat.AvatarUrl = string.IsNullOrWhiteSpace(editChatAvatarUrl) ? null : editChatAvatarUrl.Trim();
+            selectedChat.AllowInvites = editAllowInvites;
+            selectedChat.AllowMembersToInvite = editAllowMembersToInvite;
+            selectedChat.MaxMembers = editMaxMembers;
+            
+            StateHasChanged(); // Update UI immediately
+            CloseSettingsModal(); // Close modal immediately
+
+            try
+            {
+                var updateDto = new UpdateChatDto
+                {
+                    Name = editChatName.Trim(),
+                    Description = string.IsNullOrWhiteSpace(editChatDescription) ? null : editChatDescription.Trim(),
+                    AvatarUrl = string.IsNullOrWhiteSpace(editChatAvatarUrl) ? null : editChatAvatarUrl.Trim(),
+                    AllowInvites = editAllowInvites,
+                    AllowMembersToInvite = editAllowMembersToInvite,
+                    MaxMembers = editMaxMembers
+                };
+
+                var response = await ChatService.UpdateChatAsync(selectedChat.Id, updateDto);
+                if (!response.Success)
+                {
+                    // Rollback on API error
+                    selectedChat.Name = originalName;
+                    selectedChat.Description = originalDescription;
+                    selectedChat.AvatarUrl = originalAvatarUrl;
+                    selectedChat.AllowInvites = originalAllowInvites;
+                    selectedChat.AllowMembersToInvite = originalAllowMembersToInvite;
+                    selectedChat.MaxMembers = originalMaxMembers;
+                    StateHasChanged();
+                    Console.WriteLine($"Error updating chat settings: {response.Message}");
+                }
+                else
+                {
+                    Console.WriteLine($"Chat settings updated successfully");
+                }
+            }
+            catch (Exception apiEx)
+            {
+                // Rollback on API exception
+                selectedChat.Name = originalName;
+                selectedChat.Description = originalDescription;
+                selectedChat.AvatarUrl = originalAvatarUrl;
+                selectedChat.AllowInvites = originalAllowInvites;
+                selectedChat.AllowMembersToInvite = originalAllowMembersToInvite;
+                selectedChat.MaxMembers = originalMaxMembers;
+                StateHasChanged();
+                Console.WriteLine($"API exception updating chat settings: {apiEx.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating chat settings: {ex.Message}");
         }
     }
 

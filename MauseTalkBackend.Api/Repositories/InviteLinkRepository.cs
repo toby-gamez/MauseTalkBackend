@@ -35,8 +35,19 @@ public class InviteLinkRepository : IInviteLinkRepository
     public async Task<IEnumerable<InviteLink>> GetChatInviteLinksAsync(Guid chatId)
     {
         return await _context.InviteLinks
-            .Where(i => i.ChatId == chatId && i.IsActive)
+            .Where(i => i.ChatId == chatId && i.IsActive && !i.IsSuspended && !i.IsBlocked)
             .Include(i => i.CreatedBy)
+            .Include(i => i.SuspendedBy)
+            .OrderByDescending(i => i.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<InviteLink>> GetAllChatInviteLinksAsync(Guid chatId)
+    {
+        return await _context.InviteLinks
+            .Where(i => i.ChatId == chatId)
+            .Include(i => i.CreatedBy)
+            .Include(i => i.SuspendedBy)
             .OrderByDescending(i => i.CreatedAt)
             .ToListAsync();
     }
@@ -66,6 +77,25 @@ public class InviteLinkRepository : IInviteLinkRepository
         return inviteLink;
     }
 
+    public async Task<InviteLink> UpdateAsync(Guid id, UpdateInviteLinkDto updateDto)
+    {
+        var inviteLink = await _context.InviteLinks.FindAsync(id);
+        if (inviteLink == null)
+            throw new ArgumentException("Invite link not found");
+
+        if (updateDto.ExpiresAt.HasValue)
+            inviteLink.ExpiresAt = updateDto.ExpiresAt.Value;
+        
+        if (updateDto.UsageLimit.HasValue)
+            inviteLink.UsageLimit = updateDto.UsageLimit;
+        
+        if (updateDto.IsActive.HasValue)
+            inviteLink.IsActive = updateDto.IsActive.Value;
+
+        await _context.SaveChangesAsync();
+        return await GetByIdAsync(id) ?? inviteLink;
+    }
+
     public async Task DeleteAsync(Guid id)
     {
         var inviteLink = await _context.InviteLinks.FindAsync(id);
@@ -82,6 +112,9 @@ public class InviteLinkRepository : IInviteLinkRepository
             .FirstOrDefaultAsync(i => i.InviteCode == inviteCode && i.IsActive);
         
         if (inviteLink == null)
+            return false;
+            
+        if (inviteLink.IsSuspended || inviteLink.IsBlocked)
             return false;
             
         if (inviteLink.ExpiresAt <= DateTime.UtcNow)
@@ -136,6 +169,67 @@ public class InviteLinkRepository : IInviteLinkRepository
             _context.InviteLinks.Update(inviteLink);
             await _context.SaveChangesAsync();
         }
+    }
+
+    public async Task<InviteLink> SuspendAsync(Guid id, Guid suspendedById, string? reason = null)
+    {
+        var inviteLink = await _context.InviteLinks.FindAsync(id);
+        if (inviteLink == null)
+            throw new ArgumentException("Invite link not found");
+
+        inviteLink.IsSuspended = true;
+        inviteLink.SuspendedById = suspendedById;
+        inviteLink.SuspendedAt = DateTime.UtcNow;
+        inviteLink.SuspensionReason = reason;
+
+        await _context.SaveChangesAsync();
+        return await GetByIdAsync(id) ?? inviteLink;
+    }
+
+    public async Task<InviteLink> UnsuspendAsync(Guid id)
+    {
+        var inviteLink = await _context.InviteLinks.FindAsync(id);
+        if (inviteLink == null)
+            throw new ArgumentException("Invite link not found");
+
+        inviteLink.IsSuspended = false;
+        inviteLink.SuspendedById = null;
+        inviteLink.SuspendedAt = null;
+        inviteLink.SuspensionReason = null;
+
+        await _context.SaveChangesAsync();
+        return await GetByIdAsync(id) ?? inviteLink;
+    }
+
+    public async Task<InviteLink> BlockAsync(Guid id, Guid blockedById)
+    {
+        var inviteLink = await _context.InviteLinks.FindAsync(id);
+        if (inviteLink == null)
+            throw new ArgumentException("Invite link not found");
+
+        inviteLink.IsBlocked = true;
+        inviteLink.SuspendedById = blockedById;
+        inviteLink.SuspendedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+        return await GetByIdAsync(id) ?? inviteLink;
+    }
+
+    public async Task<InviteLink> UnblockAsync(Guid id)
+    {
+        var inviteLink = await _context.InviteLinks.FindAsync(id);
+        if (inviteLink == null)
+            throw new ArgumentException("Invite link not found");
+
+        inviteLink.IsBlocked = false;
+        if (!inviteLink.IsSuspended)
+        {
+            inviteLink.SuspendedById = null;
+            inviteLink.SuspendedAt = null;
+        }
+
+        await _context.SaveChangesAsync();
+        return await GetByIdAsync(id) ?? inviteLink;
     }
 
     private static string GenerateInviteCode()

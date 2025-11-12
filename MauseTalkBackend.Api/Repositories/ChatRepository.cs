@@ -45,10 +45,14 @@ public class ChatRepository : IChatRepository
         {
             Name = createChatDto.Name,
             Description = createChatDto.Description,
+            AvatarUrl = createChatDto.AvatarUrl,
             Type = createChatDto.Type,
             CreatedById = createdById,
             CreatedAt = DateTime.UtcNow,
-            LastActivityAt = DateTime.UtcNow
+            LastActivityAt = DateTime.UtcNow,
+            AllowInvites = createChatDto.AllowInvites,
+            AllowMembersToInvite = createChatDto.AllowMembersToInvite,
+            MaxMembers = createChatDto.MaxMembers
         };
 
         _context.Chats.Add(chat);
@@ -155,5 +159,54 @@ public class ChatRepository : IChatRepository
             chat.LastActivityAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
+    }
+
+    public async Task<bool> HasUserRole(Guid chatId, Guid userId, ChatUserRole minimumRole)
+    {
+        var chatUser = await _context.ChatUsers
+            .FirstOrDefaultAsync(cu => cu.ChatId == chatId && cu.UserId == userId);
+        
+        return chatUser != null && chatUser.Role >= minimumRole;
+    }
+
+    public async Task<Chat> UpdateChatSettingsAsync(Guid chatId, UpdateChatDto updateDto)
+    {
+        var chat = await _context.Chats.FindAsync(chatId);
+        if (chat == null)
+            throw new ArgumentException("Chat not found");
+
+        if (!string.IsNullOrEmpty(updateDto.Name))
+            chat.Name = updateDto.Name;
+        
+        if (updateDto.Description is not null)
+            chat.Description = updateDto.Description;
+        
+        if (updateDto.AvatarUrl is not null)
+            chat.AvatarUrl = updateDto.AvatarUrl;
+        
+        if (updateDto.AllowInvites.HasValue)
+            chat.AllowInvites = updateDto.AllowInvites.Value;
+        
+        if (updateDto.AllowMembersToInvite.HasValue)
+            chat.AllowMembersToInvite = updateDto.AllowMembersToInvite.Value;
+        
+        if (updateDto.MaxMembers.HasValue)
+            chat.MaxMembers = updateDto.MaxMembers.Value;
+
+        await _context.SaveChangesAsync();
+        return await GetByIdAsync(chatId) ?? chat;
+    }
+
+    public async Task<ChatUser> UpdateUserRoleAsync(Guid chatId, Guid userId, ChatUserRole newRole)
+    {
+        var chatUser = await _context.ChatUsers
+            .FirstOrDefaultAsync(cu => cu.ChatId == chatId && cu.UserId == userId);
+        
+        if (chatUser == null)
+            throw new ArgumentException("User not in chat");
+
+        chatUser.Role = newRole;
+        await _context.SaveChangesAsync();
+        return chatUser;
     }
 }

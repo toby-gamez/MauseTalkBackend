@@ -10,9 +10,15 @@ public class InviteLink
     public int? UsageLimit { get; set; } // null = unlimited
     public int UsedCount { get; set; } = 0;
     public bool IsActive { get; set; } = true;
+    public bool IsSuspended { get; set; } = false;
+    public bool IsBlocked { get; set; } = false;
+    public string? SuspensionReason { get; set; }
+    public DateTime? SuspendedAt { get; set; }
+    public Guid? SuspendedById { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
     // Navigation properties
     public Chat Chat { get; set; } = null!;
     public User CreatedBy { get; set; } = null!;
+    public User? SuspendedBy { get; set; }
 }

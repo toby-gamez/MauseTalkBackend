@@ -104,6 +104,7 @@ public class MauseTalkDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.InviteCode).IsRequired().HasMaxLength(50);
             entity.HasIndex(e => e.InviteCode).IsUnique();
+            entity.Property(e => e.SuspensionReason).HasMaxLength(500);
             
             entity.HasOne(e => e.Chat)
                 .WithMany()
@@ -113,6 +114,11 @@ public class MauseTalkDbContext : DbContext
             entity.HasOne(e => e.CreatedBy)
                 .WithMany()
                 .HasForeignKey(e => e.CreatedById)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(e => e.SuspendedBy)
+                .WithMany()
+                .HasForeignKey(e => e.SuspendedById)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

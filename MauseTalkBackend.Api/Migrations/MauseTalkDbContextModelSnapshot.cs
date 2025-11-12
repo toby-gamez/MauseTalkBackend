@@ -28,6 +28,15 @@ namespace MauseTalkBackend.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool>("AllowInvites")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("AllowMembersToInvite")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -40,6 +49,9 @@ namespace MauseTalkBackend.Api.Migrations
 
                     b.Property<DateTime>("LastActivityAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("MaxMembers")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -113,6 +125,22 @@ namespace MauseTalkBackend.Api.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSuspended")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("SuspendedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("SuspendedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SuspensionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<int?>("UsageLimit")
                         .HasColumnType("int");
 
@@ -127,6 +155,8 @@ namespace MauseTalkBackend.Api.Migrations
 
                     b.HasIndex("InviteCode")
                         .IsUnique();
+
+                    b.HasIndex("SuspendedById");
 
                     b.ToTable("InviteLinks");
                 });
@@ -299,9 +329,16 @@ namespace MauseTalkBackend.Api.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("MauseTalkBackend.Domain.Entities.User", "SuspendedBy")
+                        .WithMany()
+                        .HasForeignKey("SuspendedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Chat");
 
                     b.Navigation("CreatedBy");
+
+                    b.Navigation("SuspendedBy");
                 });
 
             modelBuilder.Entity("MauseTalkBackend.Domain.Entities.Message", b =>
